@@ -21,9 +21,9 @@ class proxy_session : public session {
         CACHE_CLIENT,
         WAIT_CACHE,
 
-        RESPONSE_CLIENT,
+        RESPONSE_CLIENT/*,
         SERVER_BUFF,
-        BUFF_CLIENT
+        BUFF_CLIENT*/
     };
     int stage = CLIENT_REQUEST;
 
@@ -38,9 +38,11 @@ class proxy_session : public session {
 
     http::response_parser response;
     size_t response_pos = 0;
+/*
 
     size_t buff_write_pos = 0;
     size_t buff_read_pos = 0;
+*/
 
     cache_entry *entry = NULL;
     size_t entry_pos = 0;
@@ -76,8 +78,8 @@ private:
     void wait_cache_routine();
 
     void response_client_routine();
-    void server_buff_routine();
-    void buff_client_routine();
+/*    void server_buff_routine();
+    void buff_client_routine();*/
 
     void read_from_cache();
     void write_to_cache() throw(no_place_exception);

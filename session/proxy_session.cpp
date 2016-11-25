@@ -2,6 +2,7 @@
 #include "proxy_session.h"
 #include "../net/socket.h"
 #include "../net/net_exception.h"
+#include "forward_session.h"
 
 using namespace std;
 
@@ -26,12 +27,12 @@ void proxy_session::update() {
 
         case RESPONSE_CLIENT:
             response_client_routine();
-            break;
+        /*    break;
         case SERVER_BUFF:
             server_buff_routine();
             break;
         case BUFF_CLIENT:
-            buff_client_routine();
+            buff_client_routine();*/
     }
 }
 
@@ -73,8 +74,11 @@ void proxy_session::request_server_routine() {
         return;
 
     if (!request.is_workable()) {
+        auto *fwd = new forward_session(client, server, true);
+        adapters.clear();
         set_complete();
-        return;
+
+        throw (fwd);    //  TODO:  #1
     }
 
     entry = _cache.get_entry(request.get_absolute_url());
@@ -116,7 +120,7 @@ void proxy_session::server_response_routine() {
                 write_to_cache();
             return;
         } catch (no_place_exception) {
-            cerr << "ch fwd: " << request.get_absolute_url() << endl;
+            cerr << "che fwd: " << request.get_absolute_url() << endl;
         }
     } else {
         cerr << "rq fwd: " << request.get_absolute_url() << endl;
@@ -201,12 +205,18 @@ void proxy_session::response_client_routine() {
     if (response_pos < str.length())
         return;
 
-    client->set_actions(0);
+/*    client->set_actions(0);
     server->set_actions(POLL_RE);
-    stage = SERVER_BUFF;
+    stage = SERVER_BUFF;*/
+
+    auto fwd = new forward_session(server, client);
+    adapters.clear();
+    set_complete();
+
+    throw (fwd);    //  TODO:  #1
 }
 
-void proxy_session::server_buff_routine() {
+/*void proxy_session::server_buff_routine() {
     ssize_t n = server->read(buff, BUFF_SIZE);
     if (n < 1) {
         set_complete();
@@ -237,4 +247,4 @@ void proxy_session::buff_client_routine() {
     client->set_actions(0);
     server->set_actions(POLL_RE);
     stage = SERVER_BUFF;
-}
+}*/

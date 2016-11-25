@@ -26,7 +26,11 @@ void proxy::start() {
                 sessions.insert(new proxy_session(proxy_poller, proxy_cache, client));
             } else {
                 auto *cur_adapter = dynamic_cast<session_rw_adapter *>(cur);
-                cur_adapter->get_session()->update();
+                try {
+                    cur_adapter->get_session()->update();
+                } catch (session *_session) {
+                    sessions.insert(_session);  //  TODO:   #1
+                }
             }
         }
 
