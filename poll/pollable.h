@@ -32,10 +32,13 @@ public:
         ::close(filed);
     }
 
-    virtual void close();
-    virtual bool is_closed();
+    void close();
+    bool is_closed() {
+        return closed;
+    }
 
-    virtual pollable *set_actions(short actions);
+    pollable *set_actions(short actions);
+    short get_actions();
 
     bool is_acceptable();
     virtual pollable *accept();
@@ -48,7 +51,9 @@ public:
 
 private:
     pollfd get_pollfd();
-    void set_revents(short revents);
+    void set_revents(short revents) {
+        _pollfd.revents = revents;
+    }
 
     virtual void guard() = 0;
 

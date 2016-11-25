@@ -27,12 +27,6 @@ void proxy_session::update() {
 
         case RESPONSE_CLIENT:
             response_client_routine();
-        /*    break;
-        case SERVER_BUFF:
-            server_buff_routine();
-            break;
-        case BUFF_CLIENT:
-            buff_client_routine();*/
     }
 }
 
@@ -74,7 +68,7 @@ void proxy_session::request_server_routine() {
         return;
 
     if (!request.is_workable()) {
-        auto *fwd = new forward_session(client, server, true);
+        auto *fwd = new forward_session(client, server);
         adapters.clear();
         set_complete();
 
@@ -205,46 +199,9 @@ void proxy_session::response_client_routine() {
     if (response_pos < str.length())
         return;
 
-/*    client->set_actions(0);
-    server->set_actions(POLL_RE);
-    stage = SERVER_BUFF;*/
-
     auto fwd = new forward_session(server, client);
     adapters.clear();
     set_complete();
 
     throw (fwd);    //  TODO:  #1
 }
-
-/*void proxy_session::server_buff_routine() {
-    ssize_t n = server->read(buff, BUFF_SIZE);
-    if (n < 1) {
-        set_complete();
-        return;
-    }
-
-    buff_write_pos = (size_t) n;
-
-    client->set_actions(POLL_WR);
-    server->set_actions(0);
-    stage = BUFF_CLIENT;
-}
-
-void proxy_session::buff_client_routine() {
-    ssize_t n = client->write(buff + buff_read_pos, buff_write_pos - buff_read_pos);
-    if (n == -1) {
-        set_complete();
-        return;
-    }
-
-    buff_read_pos += n;
-    if (buff_read_pos < buff_write_pos)
-        return;
-
-    buff_write_pos = 0;
-    buff_read_pos = 0;
-
-    client->set_actions(0);
-    server->set_actions(POLL_RE);
-    stage = SERVER_BUFF;
-}*/

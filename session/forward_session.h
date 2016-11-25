@@ -9,33 +9,26 @@
  */
 class forward_session : public session {
 
-    enum {
-        INPUT_BUFF,
-        BUFF_OUTPUT
-    };
-    int stage = INPUT_BUFF;
+    int last_in;
 
-    session_rw_adapter *input;
-    session_rw_adapter *output;
+    bool read_ready[2] = { false, false };
+    bool write_ready[2] = { false, false };
 
-    size_t buff_write_pos = 0;
-    size_t buff_read_pos = 0;
+    size_t in_pos = 0;
+    size_t out_pos = 0;
 
-    bool revertable;
     bool complete = false;
 
 public:
-    forward_session(session_rw_adapter *input, session_rw_adapter *output,
-                    bool revertable = false)
-            : input(input), output(output), revertable(revertable) {
-        adapters.push_back(input);
-        set_session(input);
+    forward_session(session_rw_adapter *_1, session_rw_adapter *_2) {
+        adapters.push_back(_1);
+        set_session(_1);
 
-        adapters.push_back(output);
-        set_session(output);
+        adapters.push_back(_2);
+        set_session(_2);
 
-        input->set_actions(POLL_RE);
-        output->set_actions(0);
+        _1->set_actions(POLL_RE | POLL_WR);
+        _2->set_actions(POLL_RE | POLL_WR);
     }
 
     void update() override;
@@ -44,8 +37,19 @@ public:
     }
 
 private:
-    void input_buff_routine();
-    void buff_output_routine();
+    void set_write(int ad);
+    void set_read(int ad);
+
+    void read_routine();
+    void write_routine();
+
+    void reset() {
+        in_pos = 0;
+        out_pos = 0;
+
+        adapters[0]->set_actions(POLL_RE | POLL_WR);
+        adapters[1]->set_actions(POLL_RE | POLL_WR);
+    }
 };
 
 #endif //PROXY_FORWARD_SESSION_H

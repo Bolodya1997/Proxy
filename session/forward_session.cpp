@@ -3,51 +3,71 @@
 using namespace std;
 
 void forward_session::update() {
-    if (stage == INPUT_BUFF)
-        input_buff_routine();
-    else
-        buff_output_routine();
+    set_read(0);
+    set_read(1);
+    if (read_ready[0] || read_ready[1])
+        read_routine();
+
+    set_write(0);
+    set_write(1);
+    if (write_ready[0] || write_ready[1])
+        write_routine();
 }
 
-void forward_session::input_buff_routine() {
-    ssize_t n = input->read(buff, BUFF_SIZE);
+void forward_session::set_read(int ad) {
+    if (adapters[ad]->is_readable()) {
+        short old_actions = adapters[ad]->get_actions();
+        adapters[ad]->set_actions(old_actions & ~POLL_RE);
+        read_ready[ad] = true;
+    }
+}
+
+void forward_session::set_write(int ad) {
+    if (adapters[ad]->is_writable()) {
+        short old_actions = adapters[ad]->get_actions();
+        adapters[ad]->set_actions(old_actions & ~POLL_WR);
+        write_ready[ad] = true;
+    }
+}
+
+void forward_session::read_routine() {
+    if (in_pos != 0)
+        return;
+
+    if (read_ready[0]) {
+        read_ready[0] = false;
+        last_in = 0;
+    } else {
+        read_ready[1] = false;
+        last_in = 1;
+    }
+
+    ssize_t n = adapters[last_in]->read(buff, BUFF_SIZE);
     if (n < 1) {
-        if (!revertable) {
-            complete = true;
-            return;
-        }
-
-        swap(input, output);
-        revertable = false;
-
-        input->set_actions(POLL_RE);
-        output->set_actions(0);
-        stage = INPUT_BUFF;
+        complete = true;
         return;
     }
 
-    buff_write_pos = (size_t) n;
-
-    input->set_actions(0);
-    output->set_actions(POLL_WR);
-    stage = BUFF_OUTPUT;
+    in_pos = (size_t) n;
+    return;
 }
 
-void forward_session::buff_output_routine() {
-    ssize_t n = output->write(buff + buff_read_pos, buff_write_pos - buff_read_pos);
+void forward_session::write_routine() {
+    if (in_pos == 0)
+        return;
+
+    if (!write_ready[!last_in])  //  adapter can't read his data
+        return;
+
+    ssize_t n = adapters[!last_in]->write(buff + out_pos, in_pos - out_pos);
     if (n == -1) {
         complete = true;
         return;
     }
 
-    buff_read_pos += n;
-    if (buff_read_pos < buff_write_pos)
+    out_pos += n;
+    if (out_pos < in_pos)
         return;
 
-    buff_write_pos = 0;
-    buff_read_pos = 0;
-
-    input->set_actions(POLL_RE);
-    output->set_actions(0);
-    stage = INPUT_BUFF;
+    reset();
 }

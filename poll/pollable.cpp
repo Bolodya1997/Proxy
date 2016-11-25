@@ -21,23 +21,30 @@ pollable *pollable::set_actions(short actions) {
     return this;
 }
 
+short pollable::get_actions() {
+    short res = 0;
+
+    if (acceptable)
+        res |= POLL_AC;
+
+    if (_pollfd.events & POLLIN)
+        res |= POLL_RE;
+
+    if (_pollfd.events & POLLOUT)
+        res |= POLL_WR;
+
+    return res;
+}
+
 pollfd pollable::get_pollfd() {
     _pollfd.fd = filed;
 
     return _pollfd;
 }
 
-void pollable::set_revents(short revents) {
-    _pollfd.revents = revents;
-}
-
 void pollable::close() {
     _pollfd.revents = 0;
     closed = true;
-}
-
-bool pollable::is_closed() {
-    return closed;
 }
 
 bool pollable::is_acceptable() {
