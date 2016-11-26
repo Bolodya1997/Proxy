@@ -12,10 +12,10 @@ using namespace net;
 using namespace std;
 
 
-socket::socket(string hostname, uint16_t port) {
+socket::socket(string hostname, uint16_t port) throw(fd_exception) {
     filed = ::socket(AF_INET, SOCK_STREAM, 0);
     if (filed < 0)
-        throw (net_exception("socket", errno));     //  TODO:   add referred if there are no free descriptors
+        throw (fd_exception());
 
     hostent *host = gethostbyname(hostname.data());
     if (host == NULL)

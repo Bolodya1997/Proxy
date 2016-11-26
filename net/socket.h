@@ -7,14 +7,13 @@
 namespace net {
 
     class socket : public pollable {
-
-    private:
+    protected:
         socket(int filed) {
             this->filed = filed;
         }
 
     public:
-        socket(std::string hostname, uint16_t port);
+        socket(std::string hostname, uint16_t port) throw(fd_exception);
 
         ssize_t write(const void *buff, size_t n) override;
         ssize_t read(void *buff, size_t n) override;

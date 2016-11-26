@@ -12,8 +12,8 @@
 
 class cache : public single_instance {
 
-    static const unsigned long CACHE_CAPACITY = 1024 * 1024 * 10;
-    static const unsigned long CACHE_PAGE_SIZE = CACHE_CAPACITY / 2;
+    static const unsigned long CACHE_CAPACITY = 1024 * 1024 * 200;
+    static const unsigned long CACHE_PAGE_SIZE = CACHE_CAPACITY / 10 * 9;
 
     std::map<std::string, cache_entry *> entry_map;
     unsigned long size = 0;

@@ -7,7 +7,10 @@ set(SOURCE_FILES main.cpp
                  proxy.cpp proxy.h)
 set(NET_SOURCE net/server_socket.cpp net/server_socket.h
                net/net_exception.h
-               net/socket.cpp net/socket.h)
+               net/socket.cpp net/socket.h
+               net/deferred_socket.h
+               net/deferred_socket_factory.cpp net/deferred_socket_factory.h
+               net/fd_exception.h)
 set(POLL_SOURCE poll/poller.cpp poll/poller.h
                 poll/pollable.cpp poll/pollable.h)
 set(HTTP_SOURCE http/request_parser.cpp http/request_parser.h

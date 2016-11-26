@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "../poll/pollable.h"
+#include "fd_exception.h"
 
 namespace net {
 
@@ -13,7 +14,7 @@ namespace net {
     public:
         server_socket(uint16_t port);
 
-        pollable *accept() override;
+        pollable *accept() throw(fd_exception) override;
 
     private:
         void guard() override { };

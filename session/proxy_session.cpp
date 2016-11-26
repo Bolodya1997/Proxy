@@ -3,6 +3,7 @@
 #include "../net/socket.h"
 #include "../net/net_exception.h"
 #include "forward_session.h"
+#include "../net/deferred_socket_factory.h"
 
 using namespace std;
 
@@ -41,13 +42,17 @@ void proxy_session::client_request_routine() {
     if (!request.is_ready())
         return;
 
+    net::socket *socket;
     try {
-        auto socket = new net::socket(request.get_host().first, request.get_host().second);
-        server = new session_rw_adapter(this, socket);
+        socket = new net::socket(request.get_host().first, request.get_host().second);
+    } catch (fd_exception) {
+        auto ds_factory = net::deferred_socket_factory::get_instance();
+        socket = ds_factory->get_connect_socket(request.get_host().first, request.get_host().second);
     } catch (net_exception) {
         set_complete();
         return;
     }
+    server = new session_rw_adapter(this, socket);
     adapters.push_back(server);
     _poller.add(server->set_actions(POLL_WR));
 

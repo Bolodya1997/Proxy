@@ -2,6 +2,7 @@
 #include "proxy.h"
 #include "net/socket.h"
 #include "session/proxy_session.h"
+#include "net/deferred_socket_factory.h"
 
 using namespace std;
 
@@ -22,9 +23,19 @@ void proxy::start() {
             pollable *cur = *it;
 
             if (cur->is_acceptable()) {
-                pollable *client = cur->accept();
+                pollable *client;
+                try {
+                    client = cur->accept();
+                } catch (fd_exception) {
+                    auto ds_factory = net::deferred_socket_factory::get_instance();
+                    client = ds_factory->get_accept_socket(cur);
+                }
                 sessions.insert(new proxy_session(proxy_poller, proxy_cache, client));
-            } else {
+
+                continue;
+            }
+
+            if (cur->is_readable() || cur->is_writable()) {
                 auto *cur_adapter = dynamic_cast<session_rw_adapter *>(cur);
                 try {
                     cur_adapter->get_session()->update();
@@ -42,7 +53,11 @@ void proxy::start() {
             }
 
             it = sessions.erase(it);
-            delete cur;
+            delete cur; //  can free up to 2 file descriptors
+
+            auto ds_factory = net::deferred_socket_factory::get_instance();
+            ds_factory->update();
+            ds_factory->update();
         }
     }
 }

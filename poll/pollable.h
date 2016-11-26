@@ -22,7 +22,7 @@ class pollable : public single_instance {
 protected:
     int filed;
 
-    int &get_filed(pollable &obj) {
+    virtual int &get_filed(pollable &obj) {
         return obj.filed;
     }
 
@@ -37,8 +37,8 @@ public:
         return closed;
     }
 
-    pollable *set_actions(short actions);
-    short get_actions();
+    virtual pollable *set_actions(short actions);
+    virtual short get_actions();
 
     bool is_acceptable();
     virtual pollable *accept();

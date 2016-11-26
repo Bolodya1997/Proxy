@@ -5,6 +5,7 @@
 using namespace std;
 
 pollable::pollable() : filed(-1) {
+    _pollfd.events = 0;
     _pollfd.revents = 0;
 }
 
