@@ -11,15 +11,17 @@
 using namespace net;
 using namespace std;
 
-
 socket::socket(string hostname, uint16_t port) throw(fd_exception) {
     filed = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (filed < 0)
-        throw (fd_exception());
+    if (filed < 0) {
+        if (errno == ENFILE)
+            throw (fd_exception());
+        throw (net_exception("socket"));
+    }
 
     hostent *host = gethostbyname(hostname.data());
     if (host == NULL)
-        throw (net_exception("gethostbyname", errno));
+        throw (net_exception("gethostbyname"));
 
     in_addr inet_addr = **((in_addr **) host->h_addr_list);
     sockaddr_in sock_addr = {
@@ -28,7 +30,7 @@ socket::socket(string hostname, uint16_t port) throw(fd_exception) {
             .sin_addr = inet_addr
     };
     if (connect(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)) < 0)
-        throw (net_exception("connect", errno));
+        throw (net_exception("connect"));
 
     int saved_flags = fcntl(filed, F_GETFL);
     fcntl(filed, F_SETFL, saved_flags | O_NONBLOCK);

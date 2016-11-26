@@ -11,9 +11,9 @@ using namespace net;
 using namespace std;
 
 server_socket::server_socket(uint16_t port) {
-    filed = ::socket(AF_INET, SOCK_STREAM, 0);
+    filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (filed < 0)
-        throw (net_exception("socket", errno));
+        throw (net_exception("socket"));
 
     int _1[1] = { 1 };
     setsockopt(filed, SOL_SOCKET, SO_REUSEADDR, _1, sizeof(int));
@@ -27,21 +27,21 @@ server_socket::server_socket(uint16_t port) {
             .sin_addr = inet_addr
     };
     if (::bind(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)))
-        throw (net_exception("bind", errno));
+        throw (net_exception("bind"));
 
     if (listen(filed, QUEUE_SIZE) < 0)
-        throw (net_exception("listen", errno));
-
-    int saved_flags = fcntl(filed, F_GETFL);
-    fcntl(filed, F_SETFL, saved_flags | O_NONBLOCK);
+        throw (net_exception("listen"));
 }
 
 pollable *server_socket::accept() throw(fd_exception) {
     pollable::accept();
 
     int cli_filed = accept4(filed, NULL, 0, SOCK_NONBLOCK);
-    if (cli_filed < 0)
-        throw (fd_exception());
+    if (cli_filed < 0) {
+        if (errno == ENFILE)
+            throw (fd_exception());
+        throw (net_exception("accept"));
+    }
 
     return new socket(cli_filed);
 }

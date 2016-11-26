@@ -9,10 +9,7 @@ class net_exception : public std::exception {
 
     std::string cause;
 public:
-    net_exception(std::string cause, int code) : cause(cause) {
-        this->cause += ": " + std::string(strerror(code));
-    }
-    ~net_exception() { };
+    net_exception(std::string cause) : cause(cause) { }
 
     const char *what() const noexcept (true) {
         return cause.data();
