@@ -4,6 +4,7 @@
 #include <string>
 #include <netinet/in.h>
 #include "server_socket.h"
+#include "net_exception.h"
 
 class session;
 
@@ -21,7 +22,7 @@ namespace net {
         }
 
     public:
-        socket(std::string hostname, uint16_t port) throw(fd_exception);
+        socket(std::string hostname, unsigned short int port) throw(fd_exception, net_exception);
 
         session *get_session() {
             return _session;

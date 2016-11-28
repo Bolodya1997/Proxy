@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "../poll/pollable.h"
 #include "fd_exception.h"
+#include "net_exception.h"
 
 namespace net {
 
@@ -12,9 +13,9 @@ namespace net {
         const static int QUEUE_SIZE = 10;
 
     public:
-        server_socket(uint16_t port);
+        server_socket(uint16_t port) throw(net_exception);
 
-        net::socket *accept() throw(fd_exception) override;
+        net::socket *accept() throw(fd_exception, net_exception) override;
 
     private:
         void guard() override { };

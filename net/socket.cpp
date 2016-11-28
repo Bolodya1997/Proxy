@@ -4,12 +4,11 @@
 #include <netdb.h>
 #include <iostream>
 #include "socket.h"
-#include "net_exception.h"
 
 using namespace net;
 using namespace std;
 
-socket::socket(string hostname, uint16_t port) throw(fd_exception)
+socket::socket(string hostname, unsigned short int port) throw(fd_exception, net_exception)
         : _session(_session) {
     filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (filed < 0) {

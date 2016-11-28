@@ -2,6 +2,7 @@
 #include "proxy_session.h"
 #include "forward_session.h"
 #include "../net/deferred_socket_factory.h"
+#include "../net/net_exception.h"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ void proxy_session::client_request_routine() {
     } catch (fd_exception) {
         auto ds_factory = net::deferred_socket_factory::get_instance();
         server = ds_factory->get_connect_socket(request.get_host().first, request.get_host().second);
-    } catch (...) {
+    } catch (exception) {
         set_complete();
         return;
     }

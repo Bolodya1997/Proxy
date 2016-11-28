@@ -9,7 +9,7 @@
 using namespace net;
 using namespace std;
 
-server_socket::server_socket(uint16_t port) {
+server_socket::server_socket(uint16_t port) throw(net_exception) {
     filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (filed < 0)
         throw (net_exception("socket"));
@@ -32,7 +32,7 @@ server_socket::server_socket(uint16_t port) {
         throw (net_exception("listen"));
 }
 
-net::socket *server_socket::accept() throw(fd_exception) {
+net::socket *server_socket::accept() throw(fd_exception, net_exception) {
     pollable::accept();
 
     int cli_filed = accept4(filed, NULL, 0, SOCK_NONBLOCK);

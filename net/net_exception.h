@@ -3,7 +3,6 @@
 
 #include <exception>
 #include <string>
-#include <string.h>
 
 class net_exception : public std::exception {
 
