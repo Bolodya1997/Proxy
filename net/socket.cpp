@@ -1,8 +1,6 @@
 #include <unistd.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <fcntl.h>
 #include <netdb.h>
 #include <iostream>
 #include "socket.h"
@@ -11,8 +9,9 @@
 using namespace net;
 using namespace std;
 
-socket::socket(string hostname, uint16_t port) throw(fd_exception) {
-    filed = ::socket(AF_INET, SOCK_STREAM, 0);
+socket::socket(string hostname, uint16_t port) throw(fd_exception)
+        : _session(_session) {
+    filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (filed < 0) {
         if (errno == ENFILE)
             throw (fd_exception());
@@ -20,20 +19,24 @@ socket::socket(string hostname, uint16_t port) throw(fd_exception) {
     }
 
     hostent *host = gethostbyname(hostname.data());
-    if (host == NULL)
+    if (host == NULL) {
         throw (net_exception("gethostbyname"));
+    }
 
     in_addr inet_addr = **((in_addr **) host->h_addr_list);
-    sockaddr_in sock_addr = {
+    sock_addr = {
             .sin_family = AF_INET,
             .sin_port = htons(port),
             .sin_addr = inet_addr
     };
-    if (connect(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)) < 0)
-        throw (net_exception("connect"));
 
-    int saved_flags = fcntl(filed, F_GETFL);
-    fcntl(filed, F_SETFL, saved_flags | O_NONBLOCK);
+    if (::connect(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)) < 0 && errno != EINPROGRESS) {
+        throw (net_exception("connect"));
+    }
+}
+
+void socket::connect() {
+    pollable::connect();
 }
 
 ssize_t socket::write(const void *buff, size_t n) {

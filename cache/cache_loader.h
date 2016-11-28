@@ -9,19 +9,18 @@
  */
 class cache_loader : public session {
 
-    session_rw_adapter *server;
+    net::socket *server;
     cache_entry *entry;
 
     bool server_closed = false;
 
 public:
-    cache_loader(pollable *server, cache_entry *entry)
-            : entry(entry) {
-        this->server = dynamic_cast<session_rw_adapter *>(server);
-        adapters.push_back(this->server);
+    cache_loader(net::socket *server, cache_entry *entry)
+            : server(server), entry(entry) {
+        adapters.push_back(server);
 
         this->server->set_actions(POLL_RE);
-        set_session(this->server);
+        server->set_session(this);
     }
 
     void update() override {

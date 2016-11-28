@@ -15,6 +15,7 @@ class proxy_session : public session {
 
     enum {
         CLIENT_REQUEST,
+        CONNECT,
         REQUEST_SERVER,
 
         SERVER_RESPONSE,
@@ -28,8 +29,8 @@ class proxy_session : public session {
     poller &_poller;
     cache &_cache;
 
-    session_rw_adapter *client;
-    session_rw_adapter *server;
+    net::socket *client;
+    net::socket *server;
 
     http::request_parser request;
     size_t request_pos = 0;
@@ -43,11 +44,11 @@ class proxy_session : public session {
     bool complete = false;
 
 public:
-    proxy_session(poller &_poller, cache &_cache, pollable *client)
-            : _poller(_poller), _cache(_cache) {
-        this->client = new session_rw_adapter(this, client);
+    proxy_session(poller &_poller, cache &_cache, net::socket *client)
+            : _poller(_poller), _cache(_cache), client(client) {
         adapters.push_back(this->client);
 
+        client->set_session(this);
         _poller.add_timed(this->client->set_actions(POLL_RE));
     }
 
@@ -64,6 +65,7 @@ private:
     }
 
     void client_request_routine();
+    void connect_routine();
     void request_server_routine();
 
     void server_response_routine();

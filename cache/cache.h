@@ -25,7 +25,7 @@ public:
 
     cache_entry *get_entry(std::string &absolute_url);
     cache_entry *add_entry(std::string &absolute_url, unsigned long size,
-                   pollable *server) throw(no_place_exception);
+                   net::socket *server) throw(no_place_exception);
 
 private:
     void remove_last_used_entry(millis min_time);

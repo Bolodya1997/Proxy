@@ -11,12 +11,13 @@ pollable::pollable() : filed(-1) {
 
 pollable *pollable::set_actions(short actions) {
     acceptable = (bool) (actions & POLL_AC);
+    connectable = (bool) (actions & POLL_CO);
 
     _pollfd.events = 0;
     if (actions & (POLL_AC | POLL_RE))
         _pollfd.events |= POLLIN;
 
-    if (actions & POLL_WR)
+    if (actions & (POLL_WR | POLL_CO))
         _pollfd.events |= POLLOUT;
 
     return this;
@@ -27,6 +28,9 @@ short pollable::get_actions() {
 
     if (acceptable)
         res |= POLL_AC;
+
+    if (connectable)
+        res |= POLL_CO;
 
     if (_pollfd.events & POLLIN)
         res |= POLL_RE;
@@ -52,13 +56,25 @@ bool pollable::is_acceptable() {
     return acceptable && (_pollfd.revents & POLLIN);
 }
 
-pollable *pollable::accept() {
+net::socket *pollable::accept() {
     _pollfd.revents &= ~POLLIN;
 
     return NULL;
 }
 
+bool pollable::is_connectable() {
+    return connectable && (_pollfd.revents & POLLOUT);
+}
+
+void pollable::connect() {
+    connectable = false;
+    _pollfd.revents &= ~POLLOUT;
+}
+
 bool pollable::is_readable() {
+    if (is_acceptable())
+        return false;
+
     return (bool) (_pollfd.revents & POLLIN);
 }
 
@@ -69,6 +85,9 @@ ssize_t pollable::read(void *, size_t) {
 }
 
 bool pollable::is_writable() {
+    if (is_connectable())
+        return false;
+
     return (bool) (_pollfd.revents & POLLOUT);
 }
 

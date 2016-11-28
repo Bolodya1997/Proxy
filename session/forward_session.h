@@ -20,12 +20,12 @@ class forward_session : public session {
     bool complete = false;
 
 public:
-    forward_session(session_rw_adapter *_1, session_rw_adapter *_2) {
+    forward_session(net::socket *_1, net::socket *_2) {
         adapters.push_back(_1);
-        set_session(_1);
+        _1->set_session(this);
 
         adapters.push_back(_2);
-        set_session(_2);
+        _2->set_session(this);
 
         _1->set_actions(POLL_RE | POLL_WR);
         _2->set_actions(POLL_RE | POLL_WR);

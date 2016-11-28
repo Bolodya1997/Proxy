@@ -1,7 +1,5 @@
 #include <iostream>
 #include "proxy_session.h"
-#include "../net/socket.h"
-#include "../net/net_exception.h"
 #include "forward_session.h"
 #include "../net/deferred_socket_factory.h"
 
@@ -11,6 +9,9 @@ void proxy_session::update() {
     switch (stage) {
         case CLIENT_REQUEST:
             client_request_routine();
+            break;
+        case CONNECT:
+            connect_routine();
             break;
         case REQUEST_SERVER:
             request_server_routine();
@@ -42,21 +43,27 @@ void proxy_session::client_request_routine() {
     if (!request.is_ready())
         return;
 
-    net::socket *socket;
     try {
-        socket = new net::socket(request.get_host().first, request.get_host().second);
+        server = new net::socket(request.get_host().first, request.get_host().second);
     } catch (fd_exception) {
         auto ds_factory = net::deferred_socket_factory::get_instance();
-        socket = ds_factory->get_connect_socket(request.get_host().first, request.get_host().second);
-    } catch (net_exception) {
+        server = ds_factory->get_connect_socket(request.get_host().first, request.get_host().second);
+    } catch (...) {
         set_complete();
         return;
     }
-    server = new session_rw_adapter(this, socket);
+    server->set_session(this);
     adapters.push_back(server);
-    _poller.add_timed(server->set_actions(POLL_WR));
+    _poller.add_timed(server->set_actions(POLL_CO));
 
     client->set_actions(0);
+    stage = CONNECT;
+}
+
+void proxy_session::connect_routine() {
+    server->connect();
+
+    server->set_actions(POLL_WR);
     stage = REQUEST_SERVER;
 }
 

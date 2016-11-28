@@ -14,7 +14,7 @@ namespace net {
     public:
         server_socket(uint16_t port);
 
-        pollable *accept() throw(fd_exception) override;
+        net::socket *accept() throw(fd_exception) override;
 
     private:
         void guard() override { };

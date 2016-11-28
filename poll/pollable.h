@@ -8,19 +8,25 @@
 
 enum {
     POLL_AC = 0x01,
-    POLL_RE = 0x02,
-    POLL_WR = 0x04
+    POLL_CO = 0x02,
+    POLL_RE = 0x04,
+    POLL_WR = 0x08
 };
+
+namespace net {
+    class socket;
+}
 
 class pollable : public single_instance {
 
     pollfd _pollfd;
     bool acceptable;
+    bool connectable;
 
     bool closed = false;
 
 protected:
-    int filed;
+    int filed = -1;
 
     virtual int &get_filed(pollable &obj) {
         return obj.filed;
@@ -41,7 +47,10 @@ public:
     virtual short get_actions();
 
     bool is_acceptable();
-    virtual pollable *accept();
+    virtual net::socket *accept();
+
+    bool is_connectable();
+    virtual void connect();
 
     bool is_readable();
     virtual ssize_t read(void *buff, size_t n);

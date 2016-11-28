@@ -18,10 +18,11 @@ void poller::add_untimed(pollable *_pollable) {
 }
 
 void poller::poll() {
-    pollfd *pollfds = new pollfd[untimed_pollables.size() + timed_pollables.size()];
+    unsigned long size = untimed_pollables.size() + timed_pollables.size();
+    pollfd *pollfds = new pollfd[size];
     fill_pollfds(pollfds);
 
-    ::poll(pollfds, timed_pollables.size(), MAX_WAIT_TIME);
+    ::poll(pollfds, size, MAX_WAIT_TIME);
 
     fill_ready(pollfds);
     fill_out_of_date();

@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <string>
 #include <netinet/in.h>
-#include <fcntl.h>
 #include "server_socket.h"
 #include "net_exception.h"
 #include "socket.h"
@@ -33,7 +32,7 @@ server_socket::server_socket(uint16_t port) {
         throw (net_exception("listen"));
 }
 
-pollable *server_socket::accept() throw(fd_exception) {
+net::socket *server_socket::accept() throw(fd_exception) {
     pollable::accept();
 
     int cli_filed = accept4(filed, NULL, 0, SOCK_NONBLOCK);

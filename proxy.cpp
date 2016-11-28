@@ -1,6 +1,5 @@
 #include <iostream>
 #include "proxy.h"
-#include "net/socket.h"
 #include "session/proxy_session.h"
 #include "net/deferred_socket_factory.h"
 
@@ -11,7 +10,7 @@ proxy::proxy(uint16_t port)
           proxy_poller(),
           proxy_cache(sessions) {
     proxy_server->set_actions(POLL_AC);
-    proxy_poller.add_timed(proxy_server);
+    proxy_poller.add_untimed(proxy_server);
 }
 
 void proxy::start() {
@@ -30,7 +29,7 @@ void proxy::handle_ready() {
         pollable *cur = *it;
 
         if (cur->is_acceptable()) {
-            pollable *client;
+            net::socket *client;
             try {
                 client = cur->accept();
             } catch (fd_exception) {
@@ -42,9 +41,12 @@ void proxy::handle_ready() {
             continue;
         }
 
-        if (cur->is_readable() || cur->is_writable()) {
-            auto *cur_adapter = dynamic_cast<session_rw_adapter *>(cur);
-            session *cur_session = cur_adapter->get_session();
+        if (cur->is_connectable() || cur->is_readable() || cur->is_writable()) {
+            auto *cur_socket = dynamic_cast<net::socket *>(cur);
+//            if (cur_socket == NULL)
+//                continue;
+
+            session *cur_session = cur_socket->get_session();
             try {
                 cur_session->update();
             } catch (session *_session) {
@@ -60,8 +62,8 @@ void proxy::handle_ready() {
 void proxy::clean_out_of_date() {
     vector<pollable *> &out_of_date = proxy_poller.get_out_of_date();
     for (auto it = out_of_date.begin(); it != out_of_date.end(); it++) {
-        auto *cur_adapter = dynamic_cast<session_rw_adapter *>(*it);
-        session *cur_session = cur_adapter->get_session();
+        auto *cur = dynamic_cast<net::socket *>(*it);
+        session *cur_session = cur->get_session();
 
         sessions.erase(cur_session);
         delete cur_session;
