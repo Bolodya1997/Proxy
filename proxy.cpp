@@ -8,56 +8,79 @@ using namespace std;
 
 proxy::proxy(uint16_t port)
         : proxy_server(new net::server_socket(port)),
-          proxy_poller(POLLER_TIMEOUT),
+          proxy_poller(),
           proxy_cache(sessions) {
     proxy_server->set_actions(POLL_AC);
-    proxy_poller.add(proxy_server);
+    proxy_poller.add_timed(proxy_server);
 }
 
 void proxy::start() {
     while (true) {
         proxy_poller.poll();
 
-        vector<pollable *> &ready = proxy_poller.get_ready();
-        for (auto it = ready.begin(); it != ready.end(); it++) {
-            pollable *cur = *it;
+        handle_ready();
+        clean_out_of_date();
+        clean_completed_sessions();
+    }
+}
 
-            if (cur->is_acceptable()) {
-                pollable *client;
-                try {
-                    client = cur->accept();
-                } catch (fd_exception) {
-                    auto ds_factory = net::deferred_socket_factory::get_instance();
-                    client = ds_factory->get_accept_socket(cur);
-                }
-                sessions.insert(new proxy_session(proxy_poller, proxy_cache, client));
+void proxy::handle_ready() {
+    vector<pollable *> &ready = proxy_poller.get_ready();
+    for (auto it = ready.begin(); it != ready.end(); it++) {
+        pollable *cur = *it;
 
-                continue;
+        if (cur->is_acceptable()) {
+            pollable *client;
+            try {
+                client = cur->accept();
+            } catch (fd_exception) {
+                auto ds_factory = net::deferred_socket_factory::get_instance();
+                client = ds_factory->get_accept_socket(cur);
             }
+            sessions.insert(new proxy_session(proxy_poller, proxy_cache, client));
 
-            if (cur->is_readable() || cur->is_writable()) {
-                auto *cur_adapter = dynamic_cast<session_rw_adapter *>(cur);
-                try {
-                    cur_adapter->get_session()->update();
-                } catch (session *_session) {
-                    sessions.insert(_session);  //  TODO:   #1
-                }
-            }
+            continue;
         }
 
-        for (auto it = sessions.begin(); it != sessions.end();) {
-            session *cur = *it;
-            if (!cur->is_complete()) {
-                it++;
-                continue;
+        if (cur->is_readable() || cur->is_writable()) {
+            auto *cur_adapter = dynamic_cast<session_rw_adapter *>(cur);
+            session *cur_session = cur_adapter->get_session();
+            try {
+                cur_session->update();
+            } catch (session *_session) {
+                sessions.insert(_session);  //  TODO:   #1
+            } catch (...) {
+                sessions.erase(cur_session);
+                delete cur_session;
             }
-
-            it = sessions.erase(it);
-            delete cur; //  can free up to 2 file descriptors
-
-            auto ds_factory = net::deferred_socket_factory::get_instance();
-            ds_factory->update();
-            ds_factory->update();
         }
+    }
+}
+
+void proxy::clean_out_of_date() {
+    vector<pollable *> &out_of_date = proxy_poller.get_out_of_date();
+    for (auto it = out_of_date.begin(); it != out_of_date.end(); it++) {
+        auto *cur_adapter = dynamic_cast<session_rw_adapter *>(*it);
+        session *cur_session = cur_adapter->get_session();
+
+        sessions.erase(cur_session);
+        delete cur_session;
+    }
+}
+
+void proxy::clean_completed_sessions() {
+    for (auto it = sessions.begin(); it != sessions.end();) {
+        session *cur = *it;
+        if (!cur->is_complete()) {
+            it++;
+            continue;
+        }
+
+        it = sessions.erase(it);
+        delete cur; //  can free up to 2 file descriptors
+
+        auto ds_factory = net::deferred_socket_factory::get_instance();
+        ds_factory->update();
+        ds_factory->update();
     }
 }

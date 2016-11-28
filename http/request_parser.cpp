@@ -44,10 +44,8 @@ void request_parser::parse() {
 //    if (standard != "HTTP/1.0\r\n")
 //        workable = false;
 
-    bool host_flag = false;
     for (auto it = ++data.begin(); it != data.end(); it++) {
         if (it->find("Host:") == 0) {
-            host_flag = true;
             unsigned long hostname_start = it->find(' ') + 1;
 
             hostname = it->substr(hostname_start);

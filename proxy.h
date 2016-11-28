@@ -8,8 +8,6 @@
 
 class proxy : public single_instance {
 
-    static const int POLLER_TIMEOUT = -1;   //  TODO:   add connection close on timeout
-
     pollable *proxy_server;
     poller proxy_poller;
     cache proxy_cache;
@@ -20,6 +18,11 @@ public:
     proxy(uint16_t port);
 
     void start();
+
+private:
+    void handle_ready();
+    void clean_out_of_date();
+    void clean_completed_sessions();
 };
 
 #endif //PROXY_PROXY_H

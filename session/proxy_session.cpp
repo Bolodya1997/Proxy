@@ -54,7 +54,7 @@ void proxy_session::client_request_routine() {
     }
     server = new session_rw_adapter(this, socket);
     adapters.push_back(server);
-    _poller.add(server->set_actions(POLL_WR));
+    _poller.add_timed(server->set_actions(POLL_WR));
 
     client->set_actions(0);
     stage = REQUEST_SERVER;

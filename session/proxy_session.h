@@ -48,7 +48,7 @@ public:
         this->client = new session_rw_adapter(this, client);
         adapters.push_back(this->client);
 
-        _poller.add(this->client->set_actions(POLL_RE));
+        _poller.add_timed(this->client->set_actions(POLL_RE));
     }
 
     void update() override;
