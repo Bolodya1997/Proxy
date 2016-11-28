@@ -24,8 +24,7 @@ public:
     cache(std::set<session *> &sessions) : sessions(sessions) { }
 
     cache_entry *get_entry(std::string &absolute_url);
-    cache_entry *add_entry(std::string &absolute_url, unsigned long size,
-                   net::socket *server) throw(no_place_exception);
+    cache_entry *add_entry(std::string &absolute_url, unsigned long size, net::socket *server);
 
 private:
     void remove_last_used_entry(millis min_time);

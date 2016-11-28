@@ -75,7 +75,7 @@ private:
     void response_client_routine();
 
     void read_from_cache();
-    void write_to_cache() throw(no_place_exception);
+    void write_to_cache();
 };
 
 #endif //PROXY_PROXY_SESSION_H

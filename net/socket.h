@@ -22,7 +22,7 @@ namespace net {
         }
 
     public:
-        socket(std::string hostname, unsigned short int port) throw(fd_exception, net_exception);
+        socket(std::string hostname, unsigned short int port);
 
         session *get_session() {
             return _session;

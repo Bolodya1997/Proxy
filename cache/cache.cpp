@@ -13,7 +13,7 @@ cache_entry *cache::get_entry(string &absolute_url) {
 }
 
 cache_entry *cache::add_entry(string &absolute_url, unsigned long size,
-                      net::socket *server) throw(no_place_exception) {
+                      net::socket *server) {
     if (size > CACHE_PAGE_SIZE)
         throw (no_place_exception());
 

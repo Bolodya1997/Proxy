@@ -13,9 +13,9 @@ namespace net {
         const static int QUEUE_SIZE = 10;
 
     public:
-        server_socket(uint16_t port) throw(net_exception);
+        server_socket(uint16_t port);
 
-        net::socket *accept() throw(fd_exception, net_exception) override;
+        net::socket *accept() override;
 
     private:
         void guard() override { };
