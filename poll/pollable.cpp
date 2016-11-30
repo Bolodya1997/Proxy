@@ -56,7 +56,7 @@ bool pollable::is_acceptable() {
     return acceptable && (_pollfd.revents & POLLIN);
 }
 
-net::socket *pollable::accept() {
+pollable *pollable::accept() {
     _pollfd.revents &= ~POLLIN;
 
     return NULL;

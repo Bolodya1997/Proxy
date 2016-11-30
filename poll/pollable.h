@@ -13,10 +13,6 @@ enum {
     POLL_WR = 0x08
 };
 
-namespace net {
-    class socket;
-}
-
 class pollable : public single_instance {
 
     pollfd _pollfd;
@@ -47,7 +43,7 @@ public:
     virtual short get_actions();
 
     bool is_acceptable();
-    virtual net::socket *accept();
+    virtual pollable *accept();
 
     bool is_connectable();
     virtual void connect();

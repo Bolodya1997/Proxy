@@ -31,7 +31,7 @@ void proxy::handle_ready() {
         if (cur->is_acceptable()) {
             net::socket *client;
             try {
-                client = cur->accept();
+                client = dynamic_cast<net::socket *>(cur->accept());
             } catch (fd_exception) {
                 auto ds_factory = net::deferred_socket_factory::get_instance();
                 client = ds_factory->get_accept_socket(cur);

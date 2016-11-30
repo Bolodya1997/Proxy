@@ -2,7 +2,6 @@
 #include "proxy_session.h"
 #include "forward_session.h"
 #include "../net/deferred_socket_factory.h"
-#include "../net/net_exception.h"
 
 using namespace std;
 
@@ -141,7 +140,7 @@ void proxy_session::server_response_routine() {
 /*
  * cache takes control on server
  */
-void proxy_session::write_to_cache() throw(no_place_exception) {
+void proxy_session::write_to_cache() {
     entry = _cache.add_entry(request.get_absolute_url(), response.get_length(),
                              server);
     string tmp = response.get_data();

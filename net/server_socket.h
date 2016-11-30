@@ -15,7 +15,7 @@ namespace net {
     public:
         server_socket(uint16_t port);
 
-        net::socket *accept() override;
+        pollable *accept() override;
 
     private:
         void guard() override { };

@@ -37,7 +37,7 @@ namespace net {
         ssize_t write(const void *buff, size_t n) override;
         ssize_t read(void *buff, size_t n) override;
 
-        friend socket *server_socket::accept();
+        friend pollable *server_socket::accept();
 
     private:
         void guard() override { };

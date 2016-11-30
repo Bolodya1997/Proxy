@@ -3,7 +3,6 @@
 #include <string>
 #include <netinet/in.h>
 #include "server_socket.h"
-#include "net_exception.h"
 #include "socket.h"
 
 using namespace net;
@@ -32,7 +31,7 @@ server_socket::server_socket(uint16_t port) {
         throw (net_exception("listen"));
 }
 
-net::socket *server_socket::accept() {
+pollable *server_socket::accept() {
     pollable::accept();
 
     int cli_filed = accept4(filed, NULL, 0, SOCK_NONBLOCK);
