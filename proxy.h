@@ -8,6 +8,8 @@
 
 class proxy : public single_instance {
 
+    static const int MAX_WAIT_TIME = 1000;  //  in millis
+
     pollable *proxy_server;
     poller proxy_poller;
     cache proxy_cache;

@@ -8,8 +8,8 @@
 #include "../cache/cache.h"
 
 /*
- * adapters[0] = client
- * adapters[1] = server
+ * pollables[0] = client
+ * pollables[1] = server
  */
 class proxy_session : public session {
 
@@ -29,8 +29,8 @@ class proxy_session : public session {
     poller &_poller;
     cache &_cache;
 
-    net::socket *client;
-    net::socket *server;
+    pollable *client;
+    pollable *server;
 
     http::request_parser request;
     size_t request_pos = 0;
@@ -44,11 +44,11 @@ class proxy_session : public session {
     bool complete = false;
 
 public:
-    proxy_session(poller &_poller, cache &_cache, net::socket *client)
+    proxy_session(poller &_poller, cache &_cache, pollable *client)
             : _poller(_poller), _cache(_cache), client(client) {
-        adapters.push_back(this->client);
+        pollables.push_back(this->client);
 
-        client->set_session(this);
+        client->set_owner(this);
         _poller.add_timed(this->client->set_actions(POLL_RE));
     }
 

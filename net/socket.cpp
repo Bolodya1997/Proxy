@@ -8,7 +8,7 @@
 using namespace net;
 using namespace std;
 
-socket::socket(string hostname, unsigned short int port) : _session(_session) {
+socket::socket(string hostname, unsigned short int port) {
     filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (filed < 0) {
         if (errno == ENFILE)

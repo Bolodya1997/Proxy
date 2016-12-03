@@ -3,8 +3,6 @@
 using namespace std;
 using namespace chrono;
 
-const millis poller::MAX_WAIT_DURATION = duration<int>(poller::MAX_WAIT_TIME);
-
 void poller::add_timed(pollable *_pollable) {
     int fd = _pollable->get_pollfd().fd;
     millis now = duration_cast<millis>(system_clock::now().time_since_epoch());

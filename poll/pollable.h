@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "../templates/single_instance.h"
+#include "../templates/observer.h"
 
 enum {
     POLL_AC = 0x01,
@@ -14,6 +15,8 @@ enum {
 };
 
 class pollable : public single_instance {
+
+    observer *owner;
 
     pollfd _pollfd;
     bool acceptable;
@@ -32,6 +35,14 @@ public:
     pollable();
     virtual ~pollable() {
         ::close(filed);
+    }
+
+    observer *get_owner() {
+        return owner;
+    }
+
+    void set_owner(observer *_owner) {
+        this->owner = _owner;
     }
 
     void close();

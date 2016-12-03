@@ -52,8 +52,8 @@ void proxy_session::client_request_routine() {
         set_complete();
         return;
     }
-    server->set_session(this);
-    adapters.push_back(server);
+    server->set_owner(this);
+    pollables.push_back(server);
     _poller.add_timed(server->set_actions(POLL_CO));
 
     client->set_actions(0);
@@ -81,7 +81,7 @@ void proxy_session::request_server_routine() {
 
     if (!request.is_workable()) {
         auto *fwd = new forward_session(client, server);
-        adapters.clear();
+        pollables.clear();
         set_complete();
 
         throw (fwd);    //  TODO:  #1
@@ -141,14 +141,13 @@ void proxy_session::server_response_routine() {
  * cache takes control on server
  */
 void proxy_session::write_to_cache() {
-    entry = _cache.add_entry(request.get_absolute_url(), response.get_length(),
-                             server);
+    entry = _cache.add_entry(request.get_absolute_url(), response.get_length(), server);
     string tmp = response.get_data();
     entry->add_data(tmp.data(), tmp.length());
     entry->add_observer(this);
 
     server = NULL;
-    adapters.pop_back();    //  erase server
+    pollables.pop_back();    //  erase server
 
     client->set_actions(POLL_WR);
     stage = CACHE_CLIENT;
@@ -212,7 +211,7 @@ void proxy_session::response_client_routine() {
         return;
 
     auto fwd = new forward_session(server, client);
-    adapters.clear();
+    pollables.clear();
     set_complete();
 
     throw (fwd);    //  TODO:  #1

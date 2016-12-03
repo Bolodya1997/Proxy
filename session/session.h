@@ -10,17 +10,19 @@ class session : public single_instance,
 protected:
     static const int BUFF_SIZE = 1024 * 10;
 
-    std::vector<net::socket *> adapters;
+    std::vector<pollable *> pollables;
 
     char buff[BUFF_SIZE];
 
 public:
     virtual ~session() {
-        for (auto it = adapters.begin(); it != adapters.end(); it = adapters.erase(it)) {
-            net::socket *cur = *it;
+        for (auto it = pollables.begin(); it != pollables.end(); it = pollables.erase(it)) {
+            pollable *cur = *it;
             cur->close();
         }
     }
+
+    virtual void update(void *arg) override { } //  TODO: improve session implements algorithms
 
     virtual bool is_complete() = 0;
 };

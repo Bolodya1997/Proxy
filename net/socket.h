@@ -14,8 +14,6 @@ namespace net {
 
         sockaddr_in sock_addr;
 
-        session *_session = NULL;
-
     protected:
         socket(int filed) {
             this->filed = filed;
@@ -23,14 +21,6 @@ namespace net {
 
     public:
         socket(std::string hostname, unsigned short int port);
-
-        session *get_session() {
-            return _session;
-        }
-
-        void set_session(session *_session) {
-            this->_session = _session;
-        }
 
         void connect() override;
 

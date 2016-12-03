@@ -4,8 +4,8 @@
 #include "session.h"
 
 /*
- * adapters[0] = input
- * adapters[1] = output
+ * pollables[0] = input
+ * pollables[1] = output
  */
 class forward_session : public session {
 
@@ -20,12 +20,12 @@ class forward_session : public session {
     bool complete = false;
 
 public:
-    forward_session(net::socket *_1, net::socket *_2) {
-        adapters.push_back(_1);
-        _1->set_session(this);
+    forward_session(pollable *_1, pollable *_2) {
+        pollables.push_back(_1);
+        _1->set_owner(this);
 
-        adapters.push_back(_2);
-        _2->set_session(this);
+        pollables.push_back(_2);
+        _2->set_owner(this);
 
         _1->set_actions(POLL_RE | POLL_WR);
         _2->set_actions(POLL_RE | POLL_WR);
@@ -47,8 +47,8 @@ private:
         in_pos = 0;
         out_pos = 0;
 
-        adapters[0]->set_actions(POLL_RE | POLL_WR);
-        adapters[1]->set_actions(POLL_RE | POLL_WR);
+        pollables[0]->set_actions(POLL_RE | POLL_WR);
+        pollables[1]->set_actions(POLL_RE | POLL_WR);
     }
 };
 

@@ -15,17 +15,17 @@ void forward_session::update() {
 }
 
 void forward_session::set_read(int ad) {
-    if (adapters[ad]->is_readable()) {
-        short old_actions = adapters[ad]->get_actions();
-        adapters[ad]->set_actions(old_actions & ~POLL_RE);
+    if (pollables[ad]->is_readable()) {
+        short old_actions = pollables[ad]->get_actions();
+        pollables[ad]->set_actions(old_actions & ~POLL_RE);
         read_ready[ad] = true;
     }
 }
 
 void forward_session::set_write(int ad) {
-    if (adapters[ad]->is_writable()) {
-        short old_actions = adapters[ad]->get_actions();
-        adapters[ad]->set_actions(old_actions & ~POLL_WR);
+    if (pollables[ad]->is_writable()) {
+        short old_actions = pollables[ad]->get_actions();
+        pollables[ad]->set_actions(old_actions & ~POLL_WR);
         write_ready[ad] = true;
     }
 }
@@ -42,7 +42,7 @@ void forward_session::read_routine() {
         last_in = 1;
     }
 
-    ssize_t n = adapters[last_in]->read(buff, BUFF_SIZE);
+    ssize_t n = pollables[last_in]->read(buff, BUFF_SIZE);
     if (n < 1) {
         complete = true;
         return;
@@ -56,10 +56,10 @@ void forward_session::write_routine() {
     if (in_pos == 0)
         return;
 
-    if (!write_ready[!last_in])  //  adapter can't read his data
+    if (!write_ready[!last_in])  //  pollable can't read his data
         return;
 
-    ssize_t n = adapters[!last_in]->write(buff + out_pos, in_pos - out_pos);
+    ssize_t n = pollables[!last_in]->write(buff + out_pos, in_pos - out_pos);
     if (n == -1) {
         complete = true;
         return;

@@ -7,7 +7,7 @@ using namespace std;
 
 proxy::proxy(uint16_t port)
         : proxy_server(new net::server_socket(port)),
-          proxy_poller(),
+          proxy_poller(MAX_WAIT_TIME),
           proxy_cache(sessions) {
     proxy_server->set_actions(POLL_AC);
     proxy_poller.add_untimed(proxy_server);
@@ -42,13 +42,9 @@ void proxy::handle_ready() {
         }
 
         if (cur->is_connectable() || cur->is_readable() || cur->is_writable()) {
-            auto *cur_socket = dynamic_cast<net::socket *>(cur);
-//            if (cur_socket == NULL)
-//                continue;
-
-            session *cur_session = cur_socket->get_session();
+            auto *cur_session = dynamic_cast<session *>(cur->get_owner());
             try {
-                cur_session->update();
+                cur_session->update(cur);
             } catch (session *_session) {
                 sessions.insert(_session);  //  TODO:   #1
             } catch (...) {
@@ -62,8 +58,7 @@ void proxy::handle_ready() {
 void proxy::clean_out_of_date() {
     vector<pollable *> &out_of_date = proxy_poller.get_out_of_date();
     for (auto it = out_of_date.begin(); it != out_of_date.end(); it++) {
-        auto *cur = dynamic_cast<net::socket *>(*it);
-        session *cur_session = cur->get_session();
+        auto *cur_session = dynamic_cast<session *>((*it)->get_owner());
 
         sessions.erase(cur_session);
         delete cur_session;

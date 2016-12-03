@@ -3,7 +3,7 @@
 using namespace net;
 
 void deferred_socket_factory::update()  {
-    socket *tmp;
+    class socket *tmp;
     deferred_socket *d_socket;
 
     if (empty)

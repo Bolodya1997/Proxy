@@ -5,22 +5,22 @@
 #include "cache_entry.h"
 
 /*
- * adapters[0] = server
+ * pollables[0] = server
  */
 class cache_loader : public session {
 
-    net::socket *server;
+    pollable *server;
     cache_entry *entry;
 
     bool server_closed = false;
 
 public:
-    cache_loader(net::socket *server, cache_entry *entry)
+    cache_loader(pollable *server, cache_entry *entry)
             : server(server), entry(entry) {
-        adapters.push_back(server);
+        pollables.push_back(server);
 
         this->server->set_actions(POLL_RE);
-        server->set_session(this);
+        server->set_owner(this);
     }
 
     void update() override {
