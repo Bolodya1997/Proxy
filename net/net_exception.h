@@ -10,7 +10,7 @@ class net_exception : public std::exception {
 public:
     net_exception(std::string cause) : cause(cause) { }
 
-    const char *what() const noexcept (true) {
+    const char *what() const noexcept override {
         return cause.data();
     }
 };

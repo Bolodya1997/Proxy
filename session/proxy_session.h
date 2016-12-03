@@ -7,10 +7,6 @@
 #include "session.h"
 #include "../cache/cache.h"
 
-/*
- * pollables[0] = client
- * pollables[1] = server
- */
 class proxy_session : public session {
 
     enum {
@@ -46,7 +42,7 @@ class proxy_session : public session {
 public:
     proxy_session(poller &_poller, cache &_cache, pollable *client)
             : _poller(_poller), _cache(_cache), client(client) {
-        pollables.push_back(this->client);
+        pollables.insert(client);
 
         client->set_owner(this);
         _poller.add_timed(this->client->set_actions(POLL_RE));

@@ -3,13 +3,11 @@
 
 #include "session.h"
 
-/*
- * pollables[0] = input
- * pollables[1] = output
- */
 class forward_session : public session {
 
     int last_in;
+
+    pollable *clients[2];
 
     bool read_ready[2] = { false, false };
     bool write_ready[2] = { false, false };
@@ -20,11 +18,11 @@ class forward_session : public session {
     bool complete = false;
 
 public:
-    forward_session(pollable *_1, pollable *_2) {
-        pollables.push_back(_1);
+    forward_session(pollable *_1, pollable *_2) : clients { _1, _2 } {
+        pollables.insert(_1);
         _1->set_owner(this);
 
-        pollables.push_back(_2);
+        pollables.insert(_2);
         _2->set_owner(this);
 
         _1->set_actions(POLL_RE | POLL_WR);
@@ -47,8 +45,8 @@ private:
         in_pos = 0;
         out_pos = 0;
 
-        pollables[0]->set_actions(POLL_RE | POLL_WR);
-        pollables[1]->set_actions(POLL_RE | POLL_WR);
+        clients[0]->set_actions(POLL_RE | POLL_WR);
+        clients[1]->set_actions(POLL_RE | POLL_WR);
     }
 };
 

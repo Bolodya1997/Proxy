@@ -53,7 +53,7 @@ void proxy_session::client_request_routine() {
         return;
     }
     server->set_owner(this);
-    pollables.push_back(server);
+    pollables.insert(server);
     _poller.add_timed(server->set_actions(POLL_CO));
 
     client->set_actions(0);
@@ -84,7 +84,7 @@ void proxy_session::request_server_routine() {
         pollables.clear();
         set_complete();
 
-        throw (fwd);    //  TODO:  #1
+        throw (fwd);
     }
 
     entry = _cache.get_entry(request.get_absolute_url());
@@ -146,8 +146,8 @@ void proxy_session::write_to_cache() {
     entry->add_data(tmp.data(), tmp.length());
     entry->add_observer(this);
 
+    pollables.erase(server);
     server = NULL;
-    pollables.pop_back();    //  erase server
 
     client->set_actions(POLL_WR);
     stage = CACHE_CLIENT;
@@ -214,5 +214,5 @@ void proxy_session::response_client_routine() {
     pollables.clear();
     set_complete();
 
-    throw (fwd);    //  TODO:  #1
+    throw (fwd);
 }

@@ -6,7 +6,7 @@
 class fd_exception : public std::exception {
 
 public:
-    const char *what() const noexcept {
+    const char *what() const noexcept override {
         return "no file descriptors available";
     };
 };

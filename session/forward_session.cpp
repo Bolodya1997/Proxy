@@ -15,17 +15,17 @@ void forward_session::update() {
 }
 
 void forward_session::set_read(int ad) {
-    if (pollables[ad]->is_readable()) {
-        short old_actions = pollables[ad]->get_actions();
-        pollables[ad]->set_actions(old_actions & ~POLL_RE);
+    if (clients[ad]->is_readable()) {
+        short old_actions = clients[ad]->get_actions();
+        clients[ad]->set_actions(old_actions & ~POLL_RE);
         read_ready[ad] = true;
     }
 }
 
 void forward_session::set_write(int ad) {
-    if (pollables[ad]->is_writable()) {
-        short old_actions = pollables[ad]->get_actions();
-        pollables[ad]->set_actions(old_actions & ~POLL_WR);
+    if (clients[ad]->is_writable()) {
+        short old_actions = clients[ad]->get_actions();
+        clients[ad]->set_actions(old_actions & ~POLL_WR);
         write_ready[ad] = true;
     }
 }
@@ -42,7 +42,7 @@ void forward_session::read_routine() {
         last_in = 1;
     }
 
-    ssize_t n = pollables[last_in]->read(buff, BUFF_SIZE);
+    ssize_t n = clients[last_in]->read(buff, BUFF_SIZE);
     if (n < 1) {
         complete = true;
         return;
@@ -59,7 +59,7 @@ void forward_session::write_routine() {
     if (!write_ready[!last_in])  //  pollable can't read his data
         return;
 
-    ssize_t n = pollables[!last_in]->write(buff + out_pos, in_pos - out_pos);
+    ssize_t n = clients[!last_in]->write(buff + out_pos, in_pos - out_pos);
     if (n == -1) {
         complete = true;
         return;

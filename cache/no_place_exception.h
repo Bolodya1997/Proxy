@@ -6,7 +6,7 @@
 class no_place_exception : public std::exception {
 
 public:
-    virtual const char *what() const noexcept {
+    virtual const char *what() const noexcept override {
         return "data is too big to be cached";
     }
 };

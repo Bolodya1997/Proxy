@@ -4,9 +4,6 @@
 #include "../session/session.h"
 #include "cache_entry.h"
 
-/*
- * pollables[0] = server
- */
 class cache_loader : public session {
 
     pollable *server;
@@ -17,7 +14,7 @@ class cache_loader : public session {
 public:
     cache_loader(pollable *server, cache_entry *entry)
             : server(server), entry(entry) {
-        pollables.push_back(server);
+        pollables.insert(server);
 
         this->server->set_actions(POLL_RE);
         server->set_owner(this);

@@ -46,7 +46,7 @@ void proxy::handle_ready() {
             try {
                 cur_session->update(cur);
             } catch (session *_session) {
-                sessions.insert(_session);  //  TODO:   #1
+                sessions.insert(_session);
             } catch (...) {
                 sessions.erase(cur_session);
                 delete cur_session;
