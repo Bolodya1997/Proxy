@@ -28,6 +28,7 @@ public:
 
 private:
     void remove_last_used_entry(millis min_time);
+    void remove_entry(std::map<std::string, cache_entry *>::iterator it);
 };
 
 

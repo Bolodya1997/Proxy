@@ -43,11 +43,15 @@ void proxy_session::client_request_routine() {
     if (!request.is_ready())
         return;
 
+    string host = "127.0.0.1";
+    uint16_t port = 3000;
+//    string host = request.get_host().first;
+//    uint16_t port = request.get_host().second;
     try {
-        server = new net::socket(request.get_host().first, request.get_host().second);
+        server = new net::socket(host, port);
     } catch (fd_exception) {
         auto ds_factory = net::deferred_socket_factory::get_instance();
-        server = ds_factory->get_connect_socket(request.get_host().first, request.get_host().second);
+        server = ds_factory->get_connect_socket(host, port);
     } catch (exception) {
         set_complete();
         return;

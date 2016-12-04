@@ -36,8 +36,9 @@ pollable *server_socket::accept() {
 
     int cli_filed = accept4(filed, NULL, 0, SOCK_NONBLOCK);
     if (cli_filed < 0) {
-        if (errno == ENFILE)
+        if (errno == ENFILE || errno == EMFILE)
             throw (fd_exception());
+        perror("");
         throw (net_exception("accept"));
     }
 

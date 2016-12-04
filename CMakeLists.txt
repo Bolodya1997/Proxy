@@ -20,7 +20,8 @@ set(CACHE_SOURCE cache/cache_entry.h
                  cache/no_place_exception.h)
 set(SESSION_SOURCE session/proxy_session.cpp
                    session/session.h
-                   session/forward_session.cpp session/session_exception.h)
+                   session/forward_session.cpp
+                   session/session_exception.h)
 set(TEMPLATES_SOURCE templates/single_instance.h
                      templates/observer.h
                      templates/observable.h)

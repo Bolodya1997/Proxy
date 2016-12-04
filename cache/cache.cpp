@@ -9,11 +9,16 @@ cache_entry *cache::get_entry(string &absolute_url) {
     if (it == entry_map.end())
         return NULL;
 
+    if (!it->second->is_valid()) {
+        remove_entry(it);
+        return NULL;
+    }
+
     return it->second;
 }
 
 cache_entry *cache::add_entry(string &absolute_url, unsigned long size,
-                      pollable *server) {
+                              pollable *server) {
     if (size > CACHE_PAGE_SIZE)
         throw (no_place_exception());
 
@@ -48,11 +53,15 @@ void cache::remove_last_used_entry(millis min_time) {
     if (min_it == entry_map.end())
         throw (no_place_exception());
 
-    cerr << "remove: " << min_it->first << endl;
+    remove_entry(min_it);
+}
 
-    cache_entry *entry = min_it->second;
-    entry_map.erase(min_it);
+void cache::remove_entry(map<string, cache_entry *>::iterator it) {
+    cerr << "remove: " << it->first << endl;
 
-    size -= entry->get_size();
-    delete entry;
+    cache_entry *to_del = it->second;
+    entry_map.erase(it);
+
+    size -= to_del->get_size();
+    delete to_del;
 }
