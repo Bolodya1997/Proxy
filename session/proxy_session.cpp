@@ -2,7 +2,6 @@
 #include "proxy_session.h"
 #include "forward_session.h"
 #include "../net/deferred_socket_factory.h"
-#include "../logging.h"
 
 using namespace std;
 
@@ -44,8 +43,36 @@ void proxy_session::client_request_routine() {
     if (!request.is_ready())
         return;
 
-//    string host = "127.0.0.1";
-//    uint16_t port = 3000;
+//    unsigned long pos = request.get_data().find("\r\n\r\n");
+//    if (pos != string::npos)
+//        cout << request.get_data().substr(0, pos + 4);
+
+    if (request.is_get()) {
+        entry = _cache.get_entry(request.get_absolute_url());
+        if (entry) {
+            read_from_cache();
+            return;
+        }
+    }
+
+    init_server();
+}
+
+void proxy_session::read_from_cache() {
+    entry->add_observer(this);
+
+    logging::load(request.get_absolute_url());
+
+    if (server) {
+        server->close();
+        pollables.erase(server);
+    }
+
+    client->set_actions(POLL_WR);
+    stage = CACHE_CLIENT;
+}
+
+void proxy_session::init_server() {
     string host = request.get_host().first;
     uint16_t port = request.get_host().second;
     try {
@@ -73,6 +100,7 @@ void proxy_session::connect_routine() {
         response.add_data(ok.data(), ok.length());
 
         client->set_actions(POLL_WR);
+        server->set_actions(0);
         stage = RESPONSE_CLIENT;
         return;
     }
@@ -101,23 +129,8 @@ void proxy_session::request_server_routine() {
         throw (fwd);
     }
 
-    entry = _cache.get_entry(request.get_absolute_url());
-    if (entry) {
-        read_from_cache();
-    } else {
-        server->set_actions(POLL_RE);
-        stage = SERVER_RESPONSE;
-    }
-}
-
-void proxy_session::read_from_cache() {
-    entry->add_observer(this);
-
-    logging::load(request.get_absolute_url());
-
-    client->set_actions(POLL_WR);
-    server->set_actions(0);
-    stage = CACHE_CLIENT;
+    server->set_actions(POLL_RE);
+    stage = SERVER_RESPONSE;
 }
 
 void proxy_session::server_response_routine() {
@@ -161,7 +174,6 @@ void proxy_session::write_to_cache() {
     entry->add_observer(this);
 
     pollables.erase(server);
-    server = NULL;
 
     client->set_actions(POLL_WR);
     stage = CACHE_CLIENT;
@@ -228,6 +240,10 @@ void proxy_session::response_client_routine() {
     response_pos += n;
     if (response_pos < str.length())
         return;
+
+//    unsigned long pos = response.get_data().find("\r\n\r\n");
+//    if (pos != string::npos)
+//        cout << response.get_data().substr(0, pos + 4);
 
     auto fwd = new forward_session(server, client);
     pollables.clear();

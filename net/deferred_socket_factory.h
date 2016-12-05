@@ -1,13 +1,36 @@
 #ifndef PROXY_DEFERRED_SOCKET_FACTORY_H
 #define PROXY_DEFERRED_SOCKET_FACTORY_H
 
-#include <list>
+#include <map>
 #include <iostream>
-#include "deferred_socket.h"
+#include "../logging.h"
+#include "socket.h"
 
 namespace net {
 
     class deferred_socket_factory {
+
+        class deferred_socket : public net::socket {
+            short saved_actions = 0;
+
+            deferred_socket() : socket(-1) { }
+
+        public:
+            void close() override;
+
+            pollable *set_actions(short actions) override;
+            short get_actions() override;
+
+        private:
+            void init(socket *tmp) {
+                this->filed = get_filed(*tmp);
+                get_filed(*tmp) = -1;
+
+                set_actions(saved_actions);
+            }
+
+            friend class deferred_socket_factory;
+        };
 
         struct accept_data {
             deferred_socket *d_socket;
@@ -20,8 +43,8 @@ namespace net {
             uint16_t port;
         };
 
-        std::list<accept_data> accept_sockets;
-        std::list<connect_data> connect_sockets;
+        std::map<deferred_socket *, accept_data> accept_sockets;
+        std::map<deferred_socket *, connect_data> connect_sockets;
 
         bool empty = true;
 
@@ -38,26 +61,8 @@ namespace net {
             return instance;
         }
 
-        deferred_socket *get_accept_socket(pollable *accepter) {
-            auto *d_socket = new deferred_socket();
-            accept_sockets.push_back({ d_socket, accepter });
-
-            std::cerr << "+++" << std::endl;
-
-            empty = false;
-            return d_socket;
-        }
-
-        deferred_socket *get_connect_socket(std::string hostname, uint16_t port) {
-            auto *d_socket = new deferred_socket();
-            connect_sockets.push_back({ d_socket, hostname, port });
-
-            std::cerr << "+++" << std::endl;
-
-            empty = false;
-            return d_socket;
-        }
-
+        deferred_socket *get_accept_socket(pollable *accepter);
+        deferred_socket *get_connect_socket(std::string hostname, uint16_t port);
         void update();
     };
 

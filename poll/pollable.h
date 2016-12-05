@@ -45,7 +45,7 @@ public:
         this->owner = _owner;
     }
 
-    void close();
+    virtual void close();
     bool is_closed() {
         return closed;
     }

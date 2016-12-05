@@ -26,7 +26,7 @@ class proxy_session : public session {
     cache &_cache;
 
     pollable *client;
-    pollable *server;
+    pollable *server = NULL;
 
     http::request_parser request;
     size_t request_pos = 0;
@@ -46,6 +46,9 @@ public:
 
         client->set_owner(this);
         _poller.add_timed(this->client->set_actions(POLL_RE));
+    }
+    ~proxy_session() {
+        set_complete();
     }
 
     void update() override;
@@ -69,6 +72,8 @@ private:
     void wait_cache_routine();
 
     void response_client_routine();
+
+    void init_server();
 
     void read_from_cache();
     void write_to_cache();

@@ -9,16 +9,16 @@ using namespace net;
 using namespace std;
 
 socket::socket(string hostname, unsigned short int port) {
-    filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-    if (filed < 0) {
-        if (errno == ENFILE || errno == EMFILE)
-            throw (fd_exception());
-        throw (net_exception("socket"));
-    }
-
     hostent *host = gethostbyname(hostname.data());
     if (host == NULL)
         throw (net_exception("gethostbyname"));
+
+    filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+    if (filed < 0) {
+        if (errno == EMFILE)
+            throw (fd_exception());
+        throw (net_exception("socket"));
+    }
 
     in_addr inet_addr = **((in_addr **) host->h_addr_list);
     sock_addr = {

@@ -3,15 +3,16 @@
 
 #include <string>
 #include <iostream>
+#include <chrono>
 
-class logging {
-public:
+namespace logging {
+
     static void store(std::string url) {
-        std::cerr << "store: " + url << std::endl;
+//        std::cerr << "store: " + url << std::endl;
     }
 
     static void load(std::string url) {
-        std::cerr << "load: " + url << std::endl;
+//        std::cerr << "load: " + url << std::endl;
     }
 
     static void remove(std::string url) {
@@ -19,11 +20,11 @@ public:
     }
 
     static void cache_fw(std::string url) {
-        std::cerr << "cache_fw: " + url << std::endl;
+//        std::cerr << "cache_fw: " + url << std::endl;
     }
 
     static void request_fw(std::string url) {
-        std::cerr << "request_fw: " + url << std::endl;
+//        std::cerr << "request_fw: " + url << std::endl;
     }
 
     static void empty() {
@@ -37,6 +38,14 @@ public:
 
         counter = (counter + 1) % 3;
     }
-};
+
+    static void get_deferred(unsigned long count) {
+        std::cerr << "deferred +> " << count << std::endl;
+    }
+
+    static void init_deferred(unsigned long count) {
+        std::cerr << "deferred -> " << count << std::endl;
+    }
+}
 
 #endif //PROXY_LOGGING_H

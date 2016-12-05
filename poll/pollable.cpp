@@ -67,7 +67,6 @@ bool pollable::is_connectable() {
 }
 
 void pollable::connect() {
-    connectable = false;
     _pollfd.revents &= ~POLLOUT;
 }
 
