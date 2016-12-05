@@ -17,9 +17,8 @@ socket::socket(string hostname, unsigned short int port) {
     }
 
     hostent *host = gethostbyname(hostname.data());
-    if (host == NULL) {
+    if (host == NULL)
         throw (net_exception("gethostbyname"));
-    }
 
     in_addr inet_addr = **((in_addr **) host->h_addr_list);
     sock_addr = {
@@ -28,9 +27,9 @@ socket::socket(string hostname, unsigned short int port) {
             .sin_addr = inet_addr
     };
 
-    if (::connect(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)) < 0 && errno != EINPROGRESS) {
+    if (::connect(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)) < 0
+        && errno != EINPROGRESS)
         throw (net_exception("connect"));
-    }
 }
 
 void socket::connect() {

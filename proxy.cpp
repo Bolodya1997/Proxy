@@ -2,6 +2,7 @@
 #include "proxy.h"
 #include "session/proxy_session.h"
 #include "net/deferred_socket_factory.h"
+#include "logging.h"
 
 using namespace std;
 
@@ -25,6 +26,10 @@ void proxy::start() {
 
 void proxy::handle_ready() {
     vector<pollable *> &ready = proxy_poller.get_ready();
+
+    if (ready.empty())
+        logging::empty();
+
     for (auto it = ready.begin(); it != ready.end(); it++) {
         pollable *cur = *it;
 
@@ -58,8 +63,11 @@ void proxy::handle_ready() {
 void proxy::clean_out_of_date() {
     vector<pollable *> &out_of_date = proxy_poller.get_out_of_date();
     for (auto it = out_of_date.begin(); it != out_of_date.end(); it++) {
-        auto *cur_session = dynamic_cast<session *>((*it)->get_owner());
+        pollable *cur = *it;
+        if (cur->is_closed())
+            continue;
 
+        auto *cur_session = dynamic_cast<session *>(cur->get_owner());
         sessions.erase(cur_session);
         delete cur_session;
     }

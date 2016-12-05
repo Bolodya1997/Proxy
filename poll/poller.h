@@ -13,7 +13,6 @@ typedef std::chrono::milliseconds millis;
 class poller : public single_instance {
 
     const int MAX_WAIT_TIME;
-    const millis MAX_WAIT_DURATION;
 
     struct timed_pollable {
         millis last_use;
@@ -28,8 +27,7 @@ class poller : public single_instance {
 
 public:
     poller(int max_wait_time)
-            : MAX_WAIT_TIME(max_wait_time),
-              MAX_WAIT_DURATION(std::chrono::duration<int>(poller::MAX_WAIT_TIME)) { }
+            : MAX_WAIT_TIME(max_wait_time) { }
 
     void add_timed(pollable *_pollable);
     void add_untimed(pollable *_pollable);

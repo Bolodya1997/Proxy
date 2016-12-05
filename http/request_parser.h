@@ -18,7 +18,8 @@ namespace http {
         std::vector<std::string> data;
 
         bool ready = false;
-        bool workable = true;
+        bool get = false;
+        bool connect = false;
 
     public:
         request_parser() {
@@ -31,8 +32,12 @@ namespace http {
             return ready;
         }
 
-        bool is_workable() {
-            return workable;
+        bool is_get() {
+            return get;
+        }
+
+        bool is_connect() {
+            return connect;
         }
 
         std::string &get_absolute_url() {

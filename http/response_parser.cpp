@@ -3,7 +3,7 @@
 using namespace http;
 using namespace std;
 
-void response_parser::add_data(char *in_data, ssize_t size) {
+void response_parser::add_data(const char *in_data, ssize_t size) {
     string *last = &data.back();
 
     for (int i = 0; i < size; i++) {

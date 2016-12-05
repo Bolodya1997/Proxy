@@ -2,6 +2,7 @@
 #include "proxy_session.h"
 #include "forward_session.h"
 #include "../net/deferred_socket_factory.h"
+#include "../logging.h"
 
 using namespace std;
 
@@ -43,10 +44,10 @@ void proxy_session::client_request_routine() {
     if (!request.is_ready())
         return;
 
-    string host = "127.0.0.1";
-    uint16_t port = 3000;
-//    string host = request.get_host().first;
-//    uint16_t port = request.get_host().second;
+//    string host = "127.0.0.1";
+//    uint16_t port = 3000;
+    string host = request.get_host().first;
+    uint16_t port = request.get_host().second;
     try {
         server = new net::socket(host, port);
     } catch (fd_exception) {
@@ -67,6 +68,15 @@ void proxy_session::client_request_routine() {
 void proxy_session::connect_routine() {
     server->connect();
 
+    if (request.is_connect()) {
+        string ok = "HTTP/1.1 200 OK\r\n\r\n";
+        response.add_data(ok.data(), ok.length());
+
+        client->set_actions(POLL_WR);
+        stage = RESPONSE_CLIENT;
+        return;
+    }
+
     server->set_actions(POLL_WR);
     stage = REQUEST_SERVER;
 }
@@ -83,7 +93,7 @@ void proxy_session::request_server_routine() {
     if (request_pos < str.length())
         return;
 
-    if (!request.is_workable()) {
+    if (!request.is_get()) {
         auto *fwd = new forward_session(client, server);
         pollables.clear();
         set_complete();
@@ -103,7 +113,7 @@ void proxy_session::request_server_routine() {
 void proxy_session::read_from_cache() {
     entry->add_observer(this);
 
-    cerr << "load: " << request.get_absolute_url() << endl;
+    logging::load(request.get_absolute_url());
 
     client->set_actions(POLL_WR);
     server->set_actions(0);
@@ -130,10 +140,10 @@ void proxy_session::server_response_routine() {
                 write_to_cache();
             return;
         } catch (no_place_exception) {
-            cerr << "che fwd: " << request.get_absolute_url() << endl;
+            logging::cache_fw(request.get_absolute_url());
         }
     } else {
-        cerr << "rq fwd: " << request.get_absolute_url() << endl;
+        logging::request_fw(request.get_absolute_url());
     }
 
     client->set_actions(POLL_WR);
@@ -160,6 +170,11 @@ void proxy_session::write_to_cache() {
 void proxy_session::cache_client_routine() {
     if (!client->is_writable())
         return;
+
+    if (!entry->is_valid()) {
+        set_complete();
+        return;
+    }
 
     string str = entry->get_data();
     if (str.length() == entry_pos) {

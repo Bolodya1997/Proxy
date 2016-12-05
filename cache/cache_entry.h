@@ -66,6 +66,8 @@ public:
 
 private:
     void guard() override { };
+
+    friend class cache_loader;
 };
 
 #endif //PROXY_CACHE_ENTRY_H

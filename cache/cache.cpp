@@ -1,5 +1,6 @@
 #include <iostream>
 #include "cache.h"
+#include "../logging.h"
 
 using namespace std;
 using namespace chrono;
@@ -30,7 +31,7 @@ cache_entry *cache::add_entry(string &absolute_url, unsigned long size,
     this->size += size;
     cache_entry *entry = entry_map[absolute_url];
 
-    cerr << "store: " << absolute_url << endl;
+    logging::store(absolute_url);
 
     sessions.insert(new cache_loader(server, entry));
     return entry;
@@ -57,7 +58,7 @@ void cache::remove_last_used_entry(millis min_time) {
 }
 
 void cache::remove_entry(map<string, cache_entry *>::iterator it) {
-    cerr << "remove: " << it->first << endl;
+    logging::remove(it->first);
 
     cache_entry *to_del = it->second;
     entry_map.erase(it);

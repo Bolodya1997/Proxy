@@ -22,7 +22,7 @@ namespace http {
             data.push_back(std::string());
         }
 
-        void add_data(char *in_data, ssize_t size);
+        void add_data(const char *in_data, ssize_t size);
 
         bool is_ready() {
             return ready;

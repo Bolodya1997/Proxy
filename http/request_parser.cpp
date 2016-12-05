@@ -4,7 +4,7 @@ using namespace http;
 using namespace std;
 
 void request_parser::add_data(char *in_data, ssize_t size) {
-    string *last = &data.front();
+    string *last = &data.back();
 
     for (int i = 0; i < size; i++) {
         if (last->find("\r\n") != string::npos) {
@@ -33,8 +33,11 @@ void request_parser::parse() {
 
     unsigned long method_end = head.find(' ');
     string method = head.substr(0, method_end);
-    if (method != "GET")
-        workable = false;
+    if (method == "GET")
+        get = true;
+    if (method == "CONNECT")
+        connect = true;
+
 
     unsigned long url_start = method_end + 1;
     unsigned long url_end = head.find(' ', url_start);
@@ -42,15 +45,15 @@ void request_parser::parse() {
 
     string standard = head.substr(url_end + 1);
 //    if (standard != "HTTP/1.0\r\n")
-//        workable = false;
+//        get = false;
 
     for (auto it = ++data.begin(); it != data.end(); it++) {
-        if (it->find("Host:") == 0) {
+        if (it->find("Host:") == 0 || it->find("host:") == 0) {
             unsigned long hostname_start = it->find(' ') + 1;
 
             hostname = it->substr(hostname_start);
             hostname.erase(hostname.length() - 2);
-        } else if (it->find("Connection:") == 0) {
+        } else if (it->find("Connection:") == 0 || it->find("connection:") == 0) {
             *it = "Connection: close\r\n";
         }
     }

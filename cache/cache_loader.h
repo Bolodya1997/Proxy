@@ -20,6 +20,11 @@ public:
         server->set_owner(this);
     }
 
+    virtual ~cache_loader() {
+        if (!entry->is_complete() && entry->is_valid())
+            entry->valid = false;
+    }
+
     void update() override {
         ssize_t n = server->read(buff, BUFF_SIZE);
         if (n < 1) {

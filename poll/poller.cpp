@@ -1,3 +1,4 @@
+#include <iostream>
 #include "poller.h"
 
 using namespace std;
@@ -84,7 +85,7 @@ void poller::fill_out_of_date() {
 
     out_of_date.clear();
     for (auto it = timed_pollables.begin(); it != timed_pollables.end(); it++) {
-        if (now - it->second.last_use > MAX_WAIT_DURATION)
+        if ((now - it->second.last_use).count() > MAX_WAIT_TIME)
             out_of_date.push_back(it->second._pollable);
     }
 }

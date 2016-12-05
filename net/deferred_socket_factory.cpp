@@ -30,6 +30,8 @@ void deferred_socket_factory::update()  {
         return;
     }
 
+    std::cerr << "---" << std::endl;
+
     d_socket->init(tmp);
     delete tmp;
 }

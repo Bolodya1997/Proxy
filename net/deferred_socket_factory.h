@@ -2,6 +2,7 @@
 #define PROXY_DEFERRED_SOCKET_FACTORY_H
 
 #include <list>
+#include <iostream>
 #include "deferred_socket.h"
 
 namespace net {
@@ -41,6 +42,8 @@ namespace net {
             auto *d_socket = new deferred_socket();
             accept_sockets.push_back({ d_socket, accepter });
 
+            std::cerr << "+++" << std::endl;
+
             empty = false;
             return d_socket;
         }
@@ -48,6 +51,8 @@ namespace net {
         deferred_socket *get_connect_socket(std::string hostname, uint16_t port) {
             auto *d_socket = new deferred_socket();
             connect_sockets.push_back({ d_socket, hostname, port });
+
+            std::cerr << "+++" << std::endl;
 
             empty = false;
             return d_socket;

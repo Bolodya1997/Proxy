@@ -1,3 +1,4 @@
+#include <iostream>
 #include "forward_session.h"
 
 using namespace std;
