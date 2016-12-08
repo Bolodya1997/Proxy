@@ -10,7 +10,7 @@ namespace net {
 
     class server_socket : public pollable {
 
-        const static int QUEUE_SIZE = 100;
+        const static int QUEUE_SIZE = 10;
 
     public:
         server_socket(uint16_t port);

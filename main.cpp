@@ -20,6 +20,15 @@ uint16_t get_port(int argc, char **argv) {
 int main(int argc, char **argv) {
     uint16_t port = get_port(argc, argv);
 
+//    int fd = socket(AF_INET, SOCK_STREAM, 0);
+//    addrinfo filter, *list;
+//    bzero(&filter, sizeof(addrinfo));
+//    filter.ai_family = AF_INET;
+//    filter.ai_socktype = SOCK_STREAM;
+//    getaddrinfo("img-s-msn-com.akamaized.net", "http", &filter, &list);
+//
+//    cerr << connect(fd, list->ai_addr, list->ai_addrlen) << endl;
+//
     rlimit limit;
     getrlimit(RLIMIT_NOFILE, &limit);
     limit.rlim_cur = 100;

@@ -16,7 +16,7 @@ namespace logging {
     }
 
     static void remove(std::string url) {
-        std::cerr << "remove: " + url << std::endl;
+//        std::cerr << "remove: " + url << std::endl;
     }
 
     static void cache_fw(std::string url) {
@@ -45,6 +45,18 @@ namespace logging {
 
     static void init_deferred(unsigned long count) {
         std::cerr << "deferred -> " << count << std::endl;
+    }
+
+    static std::chrono::milliseconds start() {
+        return std::chrono::duration_cast<std::chrono::milliseconds>
+                (std::chrono::system_clock::now().time_since_epoch());
+    }
+
+    static void end(std::chrono::milliseconds &start) {
+//        std::cerr
+//        << (std::chrono::duration_cast<std::chrono::milliseconds>
+//                            (std::chrono::system_clock::now().time_since_epoch()) - start).count()
+//        << std::endl;
     }
 }
 

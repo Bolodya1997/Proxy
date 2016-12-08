@@ -69,6 +69,11 @@ void proxy::clean_out_of_date() {
 
         auto *cur_session = dynamic_cast<session *>(cur->get_owner());
         sessions.erase(cur_session);
+
+        auto p_ses = dynamic_cast<proxy_session *>(cur_session);    //  FIXME: debug
+        if (p_ses != NULL)
+            cerr << p_ses->request.get_data() << p_ses->stage << "\n\n";
+
         delete cur_session;
     }
 }

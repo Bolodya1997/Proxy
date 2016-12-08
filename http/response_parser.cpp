@@ -1,3 +1,4 @@
+#include <iostream>
 #include "response_parser.h"
 
 using namespace http;
@@ -39,7 +40,9 @@ void response_parser::parse() {
 
     head_length = head.length();
     for (auto it = ++data.begin(); it != data.end(); it++) {
-        if (it->find("Content-Length:") == 0) {
+        if (it->find("Content-Length:") == 0
+            || it->find("Content-length:") == 0
+            || it->find("content-length:") == 0) {
             unsigned long length_begin = it->find(' ') + 1;
             string _length = it->substr(length_begin);
 

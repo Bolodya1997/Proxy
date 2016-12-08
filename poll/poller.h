@@ -1,7 +1,7 @@
 #ifndef PROXY_POLLER_H
 #define PROXY_POLLER_H
 
-#include <set>
+#include <list>
 #include <sys/poll.h>
 #include <vector>
 #include <memory>
@@ -19,8 +19,10 @@ class poller : public single_instance {
         pollable *_pollable;
     };
 
-    std::set<timed_pollable *> timed_pollables;
-    std::set<pollable *> untimed_pollables;
+    unsigned long timed_pos;
+
+    std::list<timed_pollable *> timed_pollables;
+    std::list<pollable *> untimed_pollables;
 
     std::vector<pollable *> ready;
     std::vector<pollable *> out_of_date;
@@ -43,8 +45,8 @@ public:
     }
 
 private:
-    unsigned long fill_pollfds(pollfd *pollfds);
-    void fill_ready(pollfd *pollfds);
+    void fill_pollfds(std::vector<pollfd> &pollfds);
+    void fill_ready(std::vector<pollfd> &pollfds);
     void fill_out_of_date();
 ;};
 

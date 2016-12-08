@@ -56,7 +56,7 @@ public:
     bool is_acceptable();
     virtual pollable *accept();
 
-    bool is_connectable();
+    virtual bool is_connectable();
     virtual void connect();
 
     bool is_readable();

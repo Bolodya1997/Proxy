@@ -11,28 +11,24 @@ void poller::add_timed(pollable *_pollable) {
     tmp->last_use = now;
     tmp->_pollable = _pollable;
 
-    timed_pollables.insert(tmp);
+    timed_pollables.push_back(tmp);
 }
 
 void poller::add_untimed(pollable *_pollable) {
-    untimed_pollables.insert({ _pollable });
+    untimed_pollables.push_back(_pollable);
 }
 
 void poller::poll() {
-    unsigned long size = untimed_pollables.size() + timed_pollables.size();
-    pollfd *pollfds = new pollfd[size];
-    size = fill_pollfds(pollfds);
+    vector<pollfd> pollfds;
+    fill_pollfds(pollfds);
 
-    ::poll(pollfds, size, MAX_WAIT_TIME);
+    ::poll(pollfds.data(), pollfds.size(), MAX_WAIT_TIME);
 
     fill_ready(pollfds);
     fill_out_of_date();
-
-    delete[] pollfds;
 }
 
-unsigned long poller::fill_pollfds(pollfd *pollfds) {
-    unsigned long pos = 0;
+void poller::fill_pollfds(vector<pollfd> &pollfds) {
     for (auto it = untimed_pollables.begin(); it != untimed_pollables.end();) {
         if ((*it)->is_closed()) {
             pollable *to_del = (*it);
@@ -43,9 +39,11 @@ unsigned long poller::fill_pollfds(pollfd *pollfds) {
             net::deferred_socket_factory::get_instance()->update();
             continue;
         }
-        pollfds[pos++] = (*it)->get_pollfd();
+        pollfds.push_back((*it)->get_pollfd());
         ++it;
     }
+
+    timed_pos = pollfds.size();
 
     for (auto it = timed_pollables.begin(); it != timed_pollables.end();) {
         if ((*it)->_pollable->is_closed()) {
@@ -58,17 +56,18 @@ unsigned long poller::fill_pollfds(pollfd *pollfds) {
             net::deferred_socket_factory::get_instance()->update();
             continue;
         }
-        pollfds[pos++] = (*it)->_pollable->get_pollfd();
+        pollfds.push_back((*it)->_pollable->get_pollfd());
         ++it;
     }
-
-    return pos;
 }
 
-void poller::fill_ready(pollfd *pollfds) {
+void poller::fill_ready(vector<pollfd> &pollfds) {
     ready.clear();
     int pos = 0;
-    for (auto it = untimed_pollables.begin(); it != untimed_pollables.end(); it++, pos++) {
+    for (auto it = untimed_pollables.begin();
+         it != untimed_pollables.end() && pos != timed_pos;
+         it++, pos++) {
+
         if (pollfds[pos].revents == 0)
             continue;
 

@@ -3,6 +3,8 @@
 
 class observer {
 public:
+    virtual ~observer() { }
+
     virtual void update() = 0;
     virtual void update(void *arg) = 0;
 };

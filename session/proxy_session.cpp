@@ -43,10 +43,6 @@ void proxy_session::client_request_routine() {
     if (!request.is_ready())
         return;
 
-//    unsigned long pos = request.get_data().find("\r\n\r\n");
-//    if (pos != string::npos)
-//        cout << request.get_data().substr(0, pos + 4);
-
     if (request.is_get()) {
         entry = _cache.get_entry(request.get_absolute_url());
         if (entry) {

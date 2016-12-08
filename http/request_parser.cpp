@@ -48,12 +48,17 @@ void request_parser::parse() {
 //        get = false;
 
     for (auto it = ++data.begin(); it != data.end(); it++) {
-        if (it->find("Host:") == 0 || it->find("host:") == 0) {
+        if (it->find("Host:") == 0
+            || it->find("host:") == 0) {
             unsigned long hostname_start = it->find(' ') + 1;
 
             hostname = it->substr(hostname_start);
             hostname.erase(hostname.length() - 2);
-        } else if (it->find("Connection:") == 0 || it->find("connection:") == 0) {
+        } else if (it->find("Connection:") == 0
+                   || it->find("connection:") == 0
+                   || it->find("Proxy-Connection:") == 0
+                   || it->find("Proxy-connection:") == 0
+                   || it->find("proxy-connection:") == 0) {
             *it = "Connection: close\r\n";
         }
     }

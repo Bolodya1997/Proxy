@@ -9,9 +9,17 @@ using namespace net;
 using namespace std;
 
 socket::socket(string hostname, unsigned short int port) {
-    hostent *host = gethostbyname(hostname.data());
-    if (host == NULL)
+    addrinfo filter, *list;
+    bzero(&filter, sizeof(addrinfo));
+    filter.ai_family = AF_INET;
+    filter.ai_socktype = SOCK_STREAM;
+    getaddrinfo(hostname.data(), to_string(port).data(), &filter, &list);
+
+    if (list == NULL)
         throw (net_exception("gethostbyname"));
+
+    sockaddr_in sock_addr = *(sockaddr_in *) list->ai_addr;
+    freeaddrinfo(list);
 
     filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (filed < 0) {
@@ -20,16 +28,10 @@ socket::socket(string hostname, unsigned short int port) {
         throw (net_exception("socket"));
     }
 
-    in_addr inet_addr = **((in_addr **) host->h_addr_list);
-    sock_addr = {
-            .sin_family = AF_INET,
-            .sin_port = htons(port),
-            .sin_addr = inet_addr
-    };
-
     if (::connect(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)) < 0
-        && errno != EINPROGRESS)
+        && errno != EINPROGRESS) {
         throw (net_exception("connect"));
+    }
 }
 
 void socket::connect() {
