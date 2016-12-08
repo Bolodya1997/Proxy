@@ -9,6 +9,8 @@ protected:
     std::set<observer *> observers;
 
 public:
+    virtual ~observable() { }
+
     virtual void add_observer(observer *_observer) {
         observers.insert(_observer);
     }
