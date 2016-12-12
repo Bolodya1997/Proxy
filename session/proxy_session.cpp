@@ -55,6 +55,7 @@ void proxy_session::client_request_routine() {
         }
     }
 
+    client->set_actions(0);
     init_server();
 }
 
@@ -86,7 +87,6 @@ void proxy_session::init_server() {
     }
     _poller.add_untimed(dns_query);
 
-    client->set_actions(0);
     stage = DNS_QUERY;
 }
 

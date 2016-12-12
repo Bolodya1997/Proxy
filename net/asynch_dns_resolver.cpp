@@ -1,4 +1,5 @@
 #include <netdb.h>
+#include <iostream>
 #include "asynch_dns_resolver.h"
 
 using namespace std;
