@@ -11,6 +11,7 @@ class proxy_session : public session {
 
     enum {
         CLIENT_REQUEST,
+        DNS_QUERY,
         CONNECT,
         REQUEST_SERVER,
 
@@ -24,6 +25,8 @@ class proxy_session : public session {
 
     poller &_poller;
     cache &_cache;
+
+    pollable *dns_query;
 
     pollable *client;
     pollable *server = NULL;
@@ -64,6 +67,7 @@ private:
     }
 
     void client_request_routine();
+    void dns_query_routine();
     void connect_routine();
     void request_server_routine();
 
@@ -78,7 +82,7 @@ private:
     void read_from_cache();
     void write_to_cache();
 
-    friend class proxy;     //  FIXME: debug
+//    friend class proxy;     //  FIXME: debug
 };
 
 #endif //PROXY_PROXY_SESSION_H

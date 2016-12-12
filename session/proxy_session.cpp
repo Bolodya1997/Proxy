@@ -2,6 +2,7 @@
 #include "proxy_session.h"
 #include "forward_session.h"
 #include "../net/deferred_socket_factory.h"
+#include "../net/asynch_dns_resolver.h"
 
 using namespace std;
 
@@ -12,6 +13,9 @@ void proxy_session::update() {
             break;
         case CONNECT:
             connect_routine();
+            break;
+        case DNS_QUERY:
+            dns_query_routine();
             break;
         case REQUEST_SERVER:
             request_server_routine();
@@ -71,11 +75,33 @@ void proxy_session::read_from_cache() {
 void proxy_session::init_server() {
     string host = request.get_host().first;
     uint16_t port = request.get_host().second;
+
+    auto dns = asynch_dns_resolver::get_instance();
     try {
-        server = new net::socket(host, port);
+        dns_query = dns->add_query(host, port, this);
+        pollables.insert(dns_query);
+    } catch (exception) {
+        set_complete();
+        return;
+    }
+    _poller.add_untimed(dns_query);
+
+    client->set_actions(0);
+    stage = DNS_QUERY;
+}
+
+void proxy_session::dns_query_routine() {
+    pollables.erase(dns_query);
+
+    auto dns = asynch_dns_resolver::get_instance();
+    sockaddr_in sock_addr;
+
+    try {
+        sock_addr = dns->handle_response(dns_query);
+        server = new net::socket(sock_addr);
     } catch (fd_exception) {
         auto ds_factory = net::deferred_socket_factory::get_instance();
-        server = ds_factory->get_connect_socket(host, port);
+        server = ds_factory->get_connect_socket(sock_addr);
     } catch (exception) {
         set_complete();
         return;
@@ -84,7 +110,6 @@ void proxy_session::init_server() {
     pollables.insert(server);
     _poller.add_timed(server->set_actions(POLL_CO));
 
-    client->set_actions(0);
     stage = CONNECT;
 }
 

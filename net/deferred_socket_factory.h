@@ -39,8 +39,7 @@ namespace net {
 
         struct connect_data {
             deferred_socket *d_socket;
-            std::string hostname;
-            uint16_t port;
+            sockaddr_in sock_addr;
         };
 
         std::map<deferred_socket *, accept_data> accept_sockets;
@@ -62,7 +61,7 @@ namespace net {
         }
 
         deferred_socket *get_accept_socket(pollable *accepter);
-        deferred_socket *get_connect_socket(std::string hostname, uint16_t port);
+        deferred_socket *get_connect_socket(sockaddr_in sock_addr);
         void update();
     };
 

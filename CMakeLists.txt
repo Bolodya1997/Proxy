@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.3)
 project(Proxy)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+link_libraries(anl)     #   -lanl
+
 set(SOURCE_FILES main.cpp
                  proxy.cpp
                  logging.h)
@@ -9,7 +11,9 @@ set(NET_SOURCE net/server_socket.cpp
                net/net_exception.h
                net/socket.cpp
                net/deferred_socket_factory.cpp
-               net/fd_exception.h)
+               net/fd_exception.h
+               net/asynch_dns_resolver.cpp
+               net/signal_wrap.h)
 set(POLL_SOURCE poll/poller.cpp
                 poll/pollable.cpp)
 set(HTTP_SOURCE http/request_parser.cpp

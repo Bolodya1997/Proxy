@@ -50,12 +50,11 @@ deferred_socket_factory::deferred_socket
 }
 
 deferred_socket_factory::deferred_socket
-*deferred_socket_factory::get_connect_socket(std::string hostname, uint16_t port) {
+*deferred_socket_factory::get_connect_socket(sockaddr_in sock_addr) {
     auto *d_socket = new deferred_socket();
     connect_data tmp = {
             .d_socket = d_socket,
-            .hostname = hostname,
-            .port = port
+            .sock_addr = sock_addr
     };
     connect_sockets.insert({ d_socket, tmp });
 
@@ -75,7 +74,7 @@ void deferred_socket_factory::update()  {
     try {
         if (!connect_sockets.empty()) {
             connect_data co_d = connect_sockets.begin()->second;
-            tmp = new socket(co_d.hostname, co_d.port);
+            tmp = new socket(co_d.sock_addr);
 
             d_socket = co_d.d_socket;
             connect_sockets.erase(d_socket);

@@ -21,6 +21,7 @@ namespace net {
 
     public:
         socket(std::string hostname, unsigned short int port);
+        socket(sockaddr_in sock_addr);
 
         void connect() override;
 
