@@ -9,13 +9,13 @@ asynch_dns_resolver *asynch_dns_resolver::instance = NULL;
 pollable *asynch_dns_resolver::add_query(string hostname, uint16_t port,
                                          observer *owner) {
     int signum = SIGRTMIN;
-    for (; signum < SIGNAL_RANGE; signum++) {
-        if (!signals[signum])
+    for (; signum < SIGRTMAX; signum++) {
+        if (!signals[signum - SIGRTMIN])
             break;
     }
     if (signum == SIGRTMAX)
         throw net_exception("signals overflow");
-    signals[signum] = true;
+    signals[signum - SIGRTMIN] = true;
 
     auto sig_w = new signal_wrap(signum);
     query _query = {
@@ -58,7 +58,7 @@ sockaddr_in asynch_dns_resolver::handle_response(pollable *sig_w) {
     sockaddr_in sock_addr = get_sockaddr(siginfo);
 
     query &_query = queries[sig_w];
-    signals[_query.signum] = true;
+    signals[_query.signum - SIGRTMIN] = false;
 
     queries.erase(sig_w);
     sig_w->close();

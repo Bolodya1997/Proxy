@@ -262,10 +262,6 @@ void proxy_session::response_client_routine() {
     if (response_pos < str.length())
         return;
 
-//    unsigned long pos = response.get_data().find("\r\n\r\n");
-//    if (pos != string::npos)
-//        cout << response.get_data().substr(0, pos + 4);
-
     auto fwd = new forward_session(server, client);
     pollables.clear();
     set_complete();

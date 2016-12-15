@@ -81,8 +81,6 @@ private:
 
     void read_from_cache();
     void write_to_cache();
-
-//    friend class proxy;     //  FIXME: debug
 };
 
 #endif //PROXY_PROXY_SESSION_H

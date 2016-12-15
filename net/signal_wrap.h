@@ -30,7 +30,7 @@ public:
     }
 
     virtual bool is_closed() override {
-        return signum != -1;
+        return signum == -1;
     }
 
     ssize_t read(void *buff, size_t n) override {

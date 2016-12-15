@@ -34,13 +34,12 @@ class asynch_dns_resolver {
 
 public:
     static asynch_dns_resolver *get_instance() {
-        if (!instance)
+        if (instance == NULL)
             instance = new asynch_dns_resolver();
         return instance;
     }
 
-    pollable *add_query(std::string hostname, uint16_t port,
-                        observer *owner);
+    pollable *add_query(std::string hostname, uint16_t port, observer *owner);
 
     sockaddr_in handle_response(pollable *sig_w);
 private:
