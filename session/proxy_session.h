@@ -16,7 +16,6 @@ class proxy_session : public session {
 
         SERVER_RESPONSE,
         CACHE_CLIENT,
-        WAIT_CACHE,
 
         RESPONSE_CLIENT
     };
@@ -69,7 +68,6 @@ private:
 
     void server_response_routine();
     void cache_client_routine();
-    void wait_cache_routine();
 
     void response_client_routine();
 
@@ -77,8 +75,6 @@ private:
 
     void read_from_cache();
     void write_to_cache();
-
-    friend class proxy;     //  FIXME: debug
 };
 
 #endif //PROXY_PROXY_SESSION_H

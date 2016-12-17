@@ -13,9 +13,9 @@ socket::socket(string hostname, unsigned short int port) {
     bzero(&filter, sizeof(addrinfo));
     filter.ai_family = AF_INET;
     filter.ai_socktype = SOCK_STREAM;
-    getaddrinfo(hostname.data(), to_string(port).data(), &filter, &list);
+    int res = getaddrinfo(hostname.data(), to_string(port).data(), &filter, &list); //  TODO: retry to make async
 
-    if (list == NULL)
+    if (res != 0 || list == NULL)
         throw (net_exception("gethostbyname"));
 
     sockaddr_in sock_addr = *(sockaddr_in *) list->ai_addr;
@@ -35,7 +35,7 @@ socket::socket(string hostname, unsigned short int port) {
 }
 
 void socket::connect() {
-    pollable::connect();
+    pollable::connect();    //  TODO: check if it is really connected
 }
 
 ssize_t socket::write(const void *buff, size_t n) {

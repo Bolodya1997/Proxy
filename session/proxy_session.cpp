@@ -23,9 +23,6 @@ void proxy_session::update() {
         case CACHE_CLIENT:
             cache_client_routine();
             break;
-        case WAIT_CACHE:
-            wait_cache_routine();
-            break;
 
         case RESPONSE_CLIENT:
             response_client_routine();
@@ -176,7 +173,7 @@ void proxy_session::write_to_cache() {
 }
 
 void proxy_session::cache_client_routine() {
-    if (!client->is_writable())
+    if (!client->is_writable() && client->get_actions() != 0)
         return;
 
     if (!entry->is_valid()) {
@@ -187,7 +184,6 @@ void proxy_session::cache_client_routine() {
     string str = entry->get_data();
     if (str.length() == entry_pos) {
         client->set_actions(0);
-        stage = WAIT_CACHE;
         return;
     }
 
@@ -200,29 +196,8 @@ void proxy_session::cache_client_routine() {
     entry_pos += n;
     if (entry->is_complete() && entry_pos == str.length())
         set_complete();     //  success
-}
-
-void proxy_session::wait_cache_routine() {
-    if (!entry->is_valid()) {
-        set_complete();
-        return;
-    }
-
-    string str = entry->get_data();
-    ssize_t n = client->write(str.data() + entry_pos, str.length() - entry_pos);
-    if (n == -1) {
-        set_complete();
-        return;
-    }
-
-    entry_pos += n;
-    if (entry->is_complete() && entry_pos == str.length()) {
-        set_complete();     //  success
-        return;
-    }
 
     client->set_actions(POLL_WR);
-    stage = CACHE_CLIENT;
 }
 
 void proxy_session::response_client_routine() {
@@ -236,10 +211,6 @@ void proxy_session::response_client_routine() {
     response_pos += n;
     if (response_pos < str.length())
         return;
-
-//    unsigned long pos = response.get_data().find("\r\n\r\n");
-//    if (pos != string::npos)
-//        cout << response.get_data().substr(0, pos + 4);
 
     auto fwd = new forward_session(server, client);
     pollables.clear();

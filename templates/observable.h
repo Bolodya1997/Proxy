@@ -2,6 +2,7 @@
 #define PROXY_OBSERVABLE_H
 
 #include <set>
+#include <vector>
 #include "observer.h"
 
 class observable {
@@ -22,7 +23,12 @@ public:
     }
 
     virtual void update_all() {
+        std::vector<observer *> to_update;
+
         for (auto it = observers.begin(); it != observers.end(); it++)
+            to_update.push_back(*it);
+
+        for (auto it = to_update.begin(); it != to_update.end(); it++)
             (*it)->update();
     }
 
