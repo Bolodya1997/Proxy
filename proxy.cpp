@@ -68,7 +68,7 @@ void proxy::clean_out_of_date() {
             continue;
 
         auto *cur_session = dynamic_cast<session *>(cur->get_owner());
-        sessions.erase(cur_session);
+        sessions.erase(cur_session);    //  TODO: correct close instead of delete
 
         delete cur_session;
     }

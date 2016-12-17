@@ -86,7 +86,12 @@ void proxy_session::init_server() {
 }
 
 void proxy_session::connect_routine() {
-    server->connect();
+    try {
+        server->connect();
+    } catch (net_exception) {
+        set_complete();
+        return;
+    }
 
     if (request.is_connect()) {
         string ok = "HTTP/1.1 200 OK\r\n\r\n";

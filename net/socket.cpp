@@ -35,7 +35,14 @@ socket::socket(string hostname, unsigned short int port) {
 }
 
 void socket::connect() {
-    pollable::connect();    //  TODO: check if it is really connected
+    pollable::connect();
+
+    int opt;
+    socklen_t len = sizeof(int);
+    getsockopt(filed, SOL_SOCKET, SO_ERROR, &opt, &len);
+
+    if (opt != 0)
+        throw (net_exception("connect"));
 }
 
 ssize_t socket::write(const void *buff, size_t n) {
