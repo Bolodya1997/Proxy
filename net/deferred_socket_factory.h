@@ -8,7 +8,7 @@
 
 namespace net {
 
-    class deferred_socket_factory {
+    class deferred_socket_factory {     //  TODO: enhance with placement new()
 
         class deferred_socket : public net::socket {
             short saved_actions = 0;
