@@ -4,6 +4,7 @@
 #include <string>
 #include <csignal>
 #include <map>
+#include <queue>
 #include <sys/signalfd.h>
 #include "socket.h"
 #include "../poll/poller.h"
@@ -25,6 +26,7 @@ class asynch_dns_resolver {
     static asynch_dns_resolver *instance;
 
     std::map<pollable *, query> queries;
+    std::queue<pollable *> postponed_queries;
     bool signals[SIGNAL_RANGE] = {0};
 
     asynch_dns_resolver() { }

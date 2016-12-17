@@ -13,9 +13,8 @@ pollable *asynch_dns_resolver::add_query(string hostname, uint16_t port,
         if (!signals[signum - SIGRTMIN])
             break;
     }
-    if (signum == SIGRTMAX)
-        throw net_exception("signals overflow");
-    signals[signum - SIGRTMIN] = true;
+    if (signum != SIGRTMAX)
+        signals[signum - SIGRTMIN] = true;
 
     auto sig_w = new signal_wrap(signum);
     query _query = {
@@ -23,11 +22,17 @@ pollable *asynch_dns_resolver::add_query(string hostname, uint16_t port,
             .port = port,
             .signum = signum
     };
-    set_query(_query);
     queries.insert({ sig_w, _query });
 
+    if (signum != SIGRTMAX) {
+        set_query(_query);
+        sig_w->set_actions(POLL_RE);
+    } else {
+        postponed_queries.push(sig_w);
+    }
+
     sig_w->set_owner(owner);
-    return sig_w->set_actions(POLL_RE);
+    return sig_w;
 }
 
 void asynch_dns_resolver::set_query(query &_query) {
@@ -47,7 +52,9 @@ void asynch_dns_resolver::set_query(query &_query) {
     sigev.sigev_signo = _query.signum;
     sigev.sigev_value.sival_ptr = host;
 
-    getaddrinfo_a(GAI_NOWAIT, &host, 1, &sigev);
+    int code = getaddrinfo_a(GAI_NOWAIT, &host, 1, &sigev);
+    if (code)
+        cerr << code << endl;
 }
 
 sockaddr_in asynch_dns_resolver::handle_response(pollable *sig_w) {
@@ -57,11 +64,25 @@ sockaddr_in asynch_dns_resolver::handle_response(pollable *sig_w) {
 
     sockaddr_in sock_addr = get_sockaddr(siginfo);
 
-    query &_query = queries[sig_w];
+    query _query = queries[sig_w];
     signals[_query.signum - SIGRTMIN] = false;
 
     queries.erase(sig_w);
     sig_w->close();
+
+    if (!postponed_queries.empty()) {
+        auto postponed = postponed_queries.front();
+        postponed_queries.pop();
+
+        observer *owner = postponed->get_owner();
+        postponed->~pollable();
+
+        postponed = new(postponed) signal_wrap(_query.signum);
+        postponed->set_owner(owner);
+        postponed->set_actions(POLL_RE);
+
+        set_query(queries[postponed]);
+    }
 
     return sock_addr;
 }
