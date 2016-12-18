@@ -29,7 +29,7 @@ public:
         _2->set_actions(POLL_RE | POLL_WR);
     }
 
-    void update() override;
+    void update() override;   //  TODO: enhance -> update(*arg)
     bool is_complete() override {
         return complete;
     }

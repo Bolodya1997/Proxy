@@ -8,10 +8,11 @@ set(SOURCE_FILES main.cpp
 set(NET_SOURCE net/server_socket.cpp
                net/net_exception.h
                net/socket.cpp
-        net/accept_socket_factory.cpp
+               net/accept_socket_factory.cpp
                net/fd_exception.h)
 set(POLL_SOURCE poll/poller.cpp
-                poll/pollable.cpp poll/fd_watcher.h)
+                poll/pollable.cpp
+                poll/fd_watcher.h)
 set(HTTP_SOURCE http/request_parser.cpp
                 http/response_parser.cpp)
 set(CACHE_SOURCE cache/cache_entry.h

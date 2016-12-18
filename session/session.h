@@ -26,7 +26,7 @@ public:
 
     virtual void update() override = 0;
 
-    virtual void update(void *arg) override {   //  TODO: need to upgrade forward_session, session(?) with update() -> update(*arg)
+    virtual void update(void *arg) override {
         if (pollables.find((pollable *) arg) == pollables.end())
             throw (session_exception());
 

@@ -102,7 +102,11 @@ void accept_socket_factory::free_reserved_fd(pollable *socket) {
     logging::init_deferred(accept_sockets.size());
 }
 
-void accept_socket_factory::update() noexcept {     //  FIXME: no exceptions allowed
+/*
+ *  FIXME: no exception allowed (I hardly believe there wouldn't be any)
+ *
+ */
+void accept_socket_factory::update() noexcept {
     if (accept_sockets.empty())
         return;
 
