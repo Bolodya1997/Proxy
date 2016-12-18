@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
     rlimit limit;
     getrlimit(RLIMIT_NOFILE, &limit);
-    limit.rlim_cur = 6;
+    limit.rlim_cur = 600;
     setrlimit(RLIMIT_NOFILE, &limit);
 
     proxy _proxy(port);

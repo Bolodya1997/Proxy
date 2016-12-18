@@ -107,7 +107,7 @@ void accept_socket_factory::update() noexcept {     //  FIXME: no exceptions all
         return;
 
     auto it = accept_sockets.begin();
-    while (it->second.ready)
+    while (it->second.ready && it != accept_sockets.end())
         ++it;
     if (it == accept_sockets.end())
         return;

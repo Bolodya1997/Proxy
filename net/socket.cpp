@@ -25,6 +25,23 @@ socket::socket(string hostname, unsigned short int port) {
     sockaddr_in sock_addr = *(sockaddr_in *) list->ai_addr;
     freeaddrinfo(list);
 
+//    this->~socket();
+//    new(this) socket(sock_addr);
+
+    filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+    if (filed < 0) {
+        if (errno == EMFILE)
+            throw (fd_exception());
+        throw (net_exception("socket"));
+    }
+
+    if (::connect(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)) < 0
+        && errno != EINPROGRESS) {
+        throw (net_exception("connect"));
+    }
+}
+
+socket::socket(sockaddr_in sock_addr) {
     filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (filed < 0) {
         if (errno == EMFILE)
