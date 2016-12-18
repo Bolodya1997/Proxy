@@ -19,7 +19,6 @@ socket::socket(string hostname, unsigned short int port) {
         if (errno == ETIMEDOUT)
             throw (fd_exception());
 
-        perror("");
         throw (net_exception("gethostbyname"));
     }
 

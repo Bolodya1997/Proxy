@@ -1,7 +1,6 @@
 #include <iostream>
 #include "proxy_session.h"
 #include "forward_session.h"
-#include "../net/deferred_socket_factory.h"
 
 using namespace std;
 
@@ -37,6 +36,7 @@ void proxy_session::close() {
         case CACHE_CLIENT:
         case RESPONSE_CLIENT:
         case ERROR_CLIENT:
+            logging::silent_end();
             set_complete();
             return;
 
@@ -66,6 +66,8 @@ void proxy_session::client_request_routine() {
     if (!request.is_ready())
         return;
 
+    net::accept_socket_factory::get_instance()->free_reserved_fd(client);
+
     if (request.is_get()) {
         entry = _cache.get_entry(request.get_absolute_url());
         if (entry) {
@@ -88,6 +90,8 @@ void proxy_session::read_from_cache() {
     if (server) {
         server->close();
         pollables.erase(server);
+    } else {
+        net::accept_socket_factory::get_instance()->update();
     }
 
     client->set_actions(POLL_WR);
@@ -99,10 +103,7 @@ void proxy_session::init_server() {
     uint16_t port = request.get_host().second;
     try {
         server = new net::socket(host, port);
-    } catch (fd_exception) {
-        auto ds_factory = net::deferred_socket_factory::get_instance();
-        server = ds_factory->get_connect_socket(host, port);
-    } catch (net_exception) {
+    } catch (exception) {
         close();
         return;
     }

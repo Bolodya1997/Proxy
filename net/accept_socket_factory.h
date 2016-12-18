@@ -2,13 +2,15 @@
 #define PROXY_DEFERRED_SOCKET_FACTORY_H
 
 #include <map>
+#include <list>
 #include <iostream>
 #include "../logging.h"
 #include "socket.h"
+#include "../poll/fd_watcher.h"
 
 namespace net {
 
-    class deferred_socket_factory {     //  TODO: enhance with placement new()
+    class accept_socket_factory : public fd_watcher {
 
         class deferred_socket : public net::socket {
             short saved_actions = 0;
@@ -29,41 +31,39 @@ namespace net {
                 set_actions(saved_actions);
             }
 
-            friend class deferred_socket_factory;
+            friend class accept_socket_factory;
         };
 
         struct accept_data {
-            deferred_socket *d_socket;
+            net::socket *socket;
             pollable *accepter;
+            int fd_reserved;
+            bool ready;
         };
 
-        struct connect_data {
-            deferred_socket *d_socket;
-            std::string hostname;
-            uint16_t port;
-        };
+        std::map<pollable *, accept_data> accept_sockets;
 
-        std::map<deferred_socket *, accept_data> accept_sockets;
-        std::map<deferred_socket *, connect_data> connect_sockets;
+        static accept_socket_factory *instance;
 
-        bool empty = true;
-
-        static deferred_socket_factory *instance;
-
-        deferred_socket_factory() { }
-        ~deferred_socket_factory() { }
+        accept_socket_factory() { }
+        ~accept_socket_factory() { }
 
     public:
-        static deferred_socket_factory *get_instance() {
+        static accept_socket_factory *get_instance() {
             if (!instance)
-                instance = new deferred_socket_factory();
+                instance = new accept_socket_factory();
 
             return instance;
         }
 
-        deferred_socket *get_accept_socket(pollable *accepter);
-        deferred_socket *get_connect_socket(std::string hostname, uint16_t port);
-        void update();
+        socket *get_accept_socket(pollable *accepter);
+        void free_reserved_fd(pollable *socket);
+
+        void update() noexcept;
+
+    private:
+        int reserve_fd();
+        socket *accept(pollable *accepter, bool *ready);
     };
 
 }

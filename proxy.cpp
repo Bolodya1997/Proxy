@@ -1,7 +1,6 @@
 #include <iostream>
 #include "proxy.h"
 #include "session/proxy_session.h"
-#include "net/deferred_socket_factory.h"
 
 using namespace std;
 
@@ -9,6 +8,9 @@ proxy::proxy(uint16_t port)
         : proxy_server(new net::server_socket(port)),
           proxy_poller(MAX_WAIT_TIME),
           proxy_cache(sessions) {
+
+    pollable::set_watcher(net::accept_socket_factory::get_instance());
+
     proxy_server->set_actions(POLL_AC);
     proxy_poller.add_untimed(proxy_server);
 }
@@ -33,14 +35,8 @@ void proxy::handle_ready() {
         pollable *cur = *it;
 
         if (cur->is_acceptable()) {
-            net::socket *client;
-            try {
-                client = dynamic_cast<net::socket *>(cur->accept());
-            } catch (fd_exception) {
-                auto ds_factory = net::deferred_socket_factory::get_instance();
-                client = ds_factory->get_accept_socket(cur);
-                cur->set_actions(0);
-            }
+            auto as_factory = net::accept_socket_factory::get_instance();
+            net::socket *client = as_factory->get_accept_socket(cur);
             sessions.insert(new proxy_session(proxy_poller, proxy_cache, client));
 
             continue;

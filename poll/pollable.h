@@ -6,8 +6,10 @@
 #include <unistd.h>
 #include "../templates/single_instance.h"
 #include "../templates/observer.h"
+#include "fd_watcher.h"
 
 enum {
+    POLL_NO = 0x00,
     POLL_AC = 0x01,
     POLL_CO = 0x02,
     POLL_RE = 0x04,
@@ -15,6 +17,8 @@ enum {
 };
 
 class pollable : public single_instance {
+
+    static fd_watcher *watcher;
 
     observer *owner;
 
@@ -35,6 +39,13 @@ public:
     pollable();
     virtual ~pollable() {
         ::close(filed);
+
+        if (filed >= 0 && watcher)
+            watcher->update();
+    }
+
+    static void set_watcher(fd_watcher *watcher) {
+        pollable::watcher = watcher;
     }
 
     observer *get_owner() {

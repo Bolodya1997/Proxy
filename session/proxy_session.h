@@ -6,6 +6,7 @@
 #include "../http/response_parser.h"
 #include "session.h"
 #include "../cache/cache.h"
+#include "../net/accept_socket_factory.h"
 
 class proxy_session : public session {
 
@@ -62,7 +63,14 @@ public:
 
 private:
     void set_complete() {
+        if (complete)
+            return;
         complete = true;
+
+        auto as_factory = net::accept_socket_factory::get_instance();
+        as_factory->free_reserved_fd(client);
+        as_factory->update();
+
         if (entry)
             entry->remove_observer(this);
     }

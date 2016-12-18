@@ -1,6 +1,6 @@
 #include <iostream>
 #include "poller.h"
-#include "../net/deferred_socket_factory.h"
+#include "../net/accept_socket_factory.h"
 
 using namespace std;
 using namespace chrono;
@@ -36,7 +36,6 @@ void poller::fill_pollfds(vector<pollfd> &pollfds) {
             it = untimed_pollables.erase(it);
             delete to_del;
 
-            net::deferred_socket_factory::get_instance()->update();
             continue;
         }
         pollfds.push_back((*it)->get_pollfd());
@@ -53,7 +52,6 @@ void poller::fill_pollfds(vector<pollfd> &pollfds) {
             delete to_del->_pollable;
             delete to_del;
 
-            net::deferred_socket_factory::get_instance()->update();
             continue;
         }
         pollfds.push_back((*it)->_pollable->get_pollfd());
