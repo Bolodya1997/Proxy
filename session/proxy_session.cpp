@@ -26,13 +26,39 @@ void proxy_session::update() {
 
         case RESPONSE_CLIENT:
             response_client_routine();
+            break;
+        case ERROR_CLIENT:
+            error_client_routine();
     }
+}
+
+void proxy_session::close() {
+    switch (stage) {
+        case CACHE_CLIENT:
+        case RESPONSE_CLIENT:
+        case ERROR_CLIENT:
+            set_complete();
+            return;
+
+        case CLIENT_REQUEST:
+            error += "408 Request Time-out";
+            break;
+
+        case CONNECT:
+        case REQUEST_SERVER:
+        case SERVER_RESPONSE:
+            error += "504 Gateway Time-out";
+    }
+    error += "\r\n\r\n";
+
+    client->set_actions(POLL_WR);
+    stage = ERROR_CLIENT;
 }
 
 void proxy_session::client_request_routine() {
     ssize_t n = client->read(buff, BUFF_SIZE);
     if (n < 1) {
-        set_complete();
+        close();
         return;
     }
 
@@ -47,6 +73,9 @@ void proxy_session::client_request_routine() {
             return;
         }
     }
+
+    client->set_actions(0);
+    stage = CONNECT;
 
     init_server();
 }
@@ -73,28 +102,25 @@ void proxy_session::init_server() {
     } catch (fd_exception) {
         auto ds_factory = net::deferred_socket_factory::get_instance();
         server = ds_factory->get_connect_socket(host, port);
-    } catch (exception) {
-        set_complete();
+    } catch (net_exception) {
+        close();
         return;
     }
     server->set_owner(this);
     pollables.insert(server);
     _poller.add_timed(server->set_actions(POLL_CO));
-
-    client->set_actions(0);
-    stage = CONNECT;
 }
 
 void proxy_session::connect_routine() {
     try {
         server->connect();
     } catch (net_exception) {
-        set_complete();
+        close();
         return;
     }
 
     if (request.is_connect()) {
-        string ok = "HTTP/1.1 200 OK\r\n\r\n";
+        string ok = "HTTP/1.0 200 OK\r\n\r\n";
         response.add_data(ok.data(), ok.length());
 
         client->set_actions(POLL_WR);
@@ -111,7 +137,7 @@ void proxy_session::request_server_routine() {
     string str = request.get_data();
     ssize_t n = server->write(str.data() + request_pos, str.length() - request_pos);
     if (n == -1) {
-        set_complete();
+        close();
         return;
     }
 
@@ -134,7 +160,7 @@ void proxy_session::request_server_routine() {
 void proxy_session::server_response_routine() {
     ssize_t n = server->read(buff, BUFF_SIZE);
     if (n < 1) {
-        set_complete();
+        close();
         return;
     }
 
@@ -182,7 +208,7 @@ void proxy_session::cache_client_routine() {
         return;
 
     if (!entry->is_valid()) {
-        set_complete();
+        close();
         return;
     }
 
@@ -194,7 +220,7 @@ void proxy_session::cache_client_routine() {
 
     ssize_t n = client->write(str.data() + entry_pos, str.length() - entry_pos);
     if (n == -1) {
-        set_complete();
+        close();
         return;
     }
 
@@ -209,7 +235,7 @@ void proxy_session::response_client_routine() {
     string str = response.get_data();
     ssize_t n = client->write(str.data() + response_pos, str.length() - response_pos);
     if (n == -1) {
-        set_complete();
+        close();
         return;
     }
 
@@ -222,4 +248,18 @@ void proxy_session::response_client_routine() {
     set_complete();
 
     throw (fwd);
+}
+
+void proxy_session::error_client_routine() {
+    ssize_t n = client->write(error.data(), error.length());
+    if (n == -1) {
+        close();
+        return;
+    }
+
+    error = error.substr((unsigned long) n);
+    if (error.empty()) {
+        set_complete();
+        return;
+    }
 }

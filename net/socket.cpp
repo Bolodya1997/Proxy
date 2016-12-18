@@ -13,10 +13,15 @@ socket::socket(string hostname, unsigned short int port) {
     bzero(&filter, sizeof(addrinfo));
     filter.ai_family = AF_INET;
     filter.ai_socktype = SOCK_STREAM;
-    int res = getaddrinfo(hostname.data(), to_string(port).data(), &filter, &list); //  TODO: retry to make async
 
-    if (res != 0 || list == NULL)
+    int res = getaddrinfo(hostname.data(), to_string(port).data(), &filter, &list); //  TODO: retry to make async
+    if (res != 0 || list == NULL) {
+        if (errno == ETIMEDOUT)
+            throw (fd_exception());
+
+        perror("");
         throw (net_exception("gethostbyname"));
+    }
 
     sockaddr_in sock_addr = *(sockaddr_in *) list->ai_addr;
     freeaddrinfo(list);

@@ -48,6 +48,10 @@ private:
         clients[0]->set_actions(POLL_RE | POLL_WR);
         clients[1]->set_actions(POLL_RE | POLL_WR);
     }
+
+    void close() override {
+        complete = true;
+    }
 };
 
 #endif //PROXY_FORWARD_SESSION_H

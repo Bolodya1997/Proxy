@@ -53,8 +53,7 @@ void proxy::handle_ready() {
             } catch (session *_session) {
                 sessions.insert(_session);
             } catch (...) {
-                sessions.erase(cur_session);
-                delete cur_session;
+                cur_session->close();
             }
         }
     }
@@ -64,13 +63,11 @@ void proxy::clean_out_of_date() {
     vector<pollable *> &out_of_date = proxy_poller.get_out_of_date();
     for (auto it = out_of_date.begin(); it != out_of_date.end(); it++) {
         pollable *cur = *it;
-        if (cur->is_closed())
-            continue;
+//        if (cur->is_closed())
+//            continue;
 
         auto *cur_session = dynamic_cast<session *>(cur->get_owner());
-        sessions.erase(cur_session);    //  TODO: correct close instead of delete
-
-        delete cur_session;
+        cur_session->close();
     }
 }
 
@@ -85,5 +82,4 @@ void proxy::clean_completed_sessions() {
         it = sessions.erase(it);
         delete cur;
     }
-
 }

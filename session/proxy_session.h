@@ -17,7 +17,8 @@ class proxy_session : public session {
         SERVER_RESPONSE,
         CACHE_CLIENT,
 
-        RESPONSE_CLIENT
+        RESPONSE_CLIENT,
+        ERROR_CLIENT
     };
     int stage = CLIENT_REQUEST;
 
@@ -32,6 +33,8 @@ class proxy_session : public session {
 
     http::response_parser response;
     size_t response_pos = 0;
+
+    std::string error = "HTTP/1.0 ";
 
     cache_entry *entry = NULL;
     size_t entry_pos = 0;
@@ -55,6 +58,8 @@ public:
         return complete;
     }
 
+    void close() override;
+
 private:
     void set_complete() {
         complete = true;
@@ -70,6 +75,7 @@ private:
     void cache_client_routine();
 
     void response_client_routine();
+    void error_client_routine();
 
     void init_server();
 

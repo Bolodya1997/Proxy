@@ -32,19 +32,19 @@ namespace logging {
 
         int i = 0;
         do {
-//            std::cerr << "------";
+            std::cerr << "------";
         } while (i++ < counter);
-//        std::cerr << std::endl;
+        std::cerr << std::endl;
 
         counter = (counter + 1) % 3;
     }
 
     static void get_deferred(unsigned long count) {
-//        std::cerr << "deferred +> " << count << std::endl;
+        std::cerr << "deferred +> " << count << std::endl;
     }
 
     static void init_deferred(unsigned long count) {
-//        std::cerr << "deferred -> " << count << std::endl;
+        std::cerr << "deferred -> " << count << std::endl;
     }
 
     static std::chrono::milliseconds start() {

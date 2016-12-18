@@ -36,6 +36,11 @@ public:
     bool is_complete() override {
         return server_closed || entry->is_complete();
     };
+
+
+    void close() override {
+        server_closed = true;
+    }
 };
 
 #endif //PROXY_CACHE_LOADER_H

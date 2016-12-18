@@ -33,6 +33,8 @@ public:
     }
 
     virtual bool is_complete() = 0;
+
+    virtual void close() = 0;
 };
 
 #endif //PROXY_SESSION_H
