@@ -8,6 +8,7 @@
 
 class session : public single_instance,
                 public observer {
+
 protected:
     static const int BUFF_SIZE = 1024 * 5;
 

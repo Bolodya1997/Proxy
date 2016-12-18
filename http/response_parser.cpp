@@ -33,6 +33,8 @@ void response_parser::parse() {
     string &head = data.front();
 
     unsigned long code_begin = head.find(' ') + 1;
+    head.replace(0, code_begin, "HTTP/1.0 ");
+
     unsigned long code_end = head.find(' ', code_begin);
     string code = head.substr(code_begin, code_end - code_begin);
     if (code != "200")

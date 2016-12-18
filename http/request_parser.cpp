@@ -43,9 +43,7 @@ void request_parser::parse() {
     unsigned long url_end = head.find(' ', url_start);
     absolute_url = head.substr(url_start, url_end - url_start);
 
-    string standard = head.substr(url_end + 1);
-//    if (standard != "HTTP/1.0\r\n")
-//        get = false;
+    string standard = "HTTP/1.0\r\n"; /*head.substr(url_end + 1);*/
 
     for (auto it = ++data.begin(); it != data.end(); it++) {
         if (it->find("Host:") == 0

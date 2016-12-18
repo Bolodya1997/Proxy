@@ -12,6 +12,7 @@ class proxy_session : public session {
 
     enum {
         CLIENT_REQUEST,
+        DNS_QUERY,
         CONNECT,
         REQUEST_SERVER,
 
@@ -25,6 +26,8 @@ class proxy_session : public session {
 
     poller &_poller;
     cache &_cache;
+
+    pollable *dns_query;
 
     pollable *client;
     pollable *server = NULL;
@@ -76,6 +79,7 @@ private:
     }
 
     void client_request_routine();
+    void dns_query_routine();
     void connect_routine();
     void request_server_routine();
 

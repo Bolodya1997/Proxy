@@ -57,7 +57,8 @@ public:
     }
 
     virtual void close();
-    bool is_closed() {
+
+    virtual bool is_closed() {
         return closed;
     }
 
