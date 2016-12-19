@@ -1,10 +1,10 @@
 #include <iostream>
-#include "proxy.h"
-#include "session/proxy_session.h"
+#include "single_thread_proxy.h"
+#include "../session/proxy_session.h"
 
 using namespace std;
 
-proxy::proxy(uint16_t port)
+single_thread_proxy::single_thread_proxy(uint16_t port)
         : proxy_server(new net::server_socket(port)),
           proxy_poller(MAX_WAIT_TIME),
           proxy_cache(sessions) {
@@ -15,7 +15,7 @@ proxy::proxy(uint16_t port)
     proxy_poller.add_untimed(proxy_server);
 }
 
-void proxy::start() {
+void single_thread_proxy::start() {
     while (true) {
         proxy_poller.poll();
 
@@ -25,7 +25,7 @@ void proxy::start() {
     }
 }
 
-void proxy::handle_ready() {
+void single_thread_proxy::handle_ready() {
     vector<pollable *> &ready = proxy_poller.get_ready();
 
     if (ready.empty())
@@ -37,7 +37,6 @@ void proxy::handle_ready() {
         if (cur->is_acceptable()) {
             auto as_factory = net::accept_socket_factory::get_instance();
             net::socket *client = as_factory->get_accept_socket(cur);
-//            net::socket *client = dynamic_cast<net::socket *>(cur->accept());
             sessions.insert(new proxy_session(proxy_poller, proxy_cache, client));
 
             continue;
@@ -56,19 +55,17 @@ void proxy::handle_ready() {
     }
 }
 
-void proxy::clean_out_of_date() {
+void single_thread_proxy::clean_out_of_date() {
     vector<pollable *> &out_of_date = proxy_poller.get_out_of_date();
     for (auto it = out_of_date.begin(); it != out_of_date.end(); it++) {
         pollable *cur = *it;
-//        if (cur->is_closed())
-//            continue;
 
         auto *cur_session = dynamic_cast<session *>(cur->get_owner());
         cur_session->close();
     }
 }
 
-void proxy::clean_completed_sessions() {
+void single_thread_proxy::clean_completed_sessions() {
     for (auto it = sessions.begin(); it != sessions.end();) {
         session *cur = *it;
         if (!cur->is_complete()) {

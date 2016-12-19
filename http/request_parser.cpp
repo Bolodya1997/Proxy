@@ -56,7 +56,7 @@ void request_parser::parse() {
                    || it->find("connection:") == 0
                    || it->find("Proxy-Connection:") == 0
                    || it->find("Proxy-connection:") == 0
-                   || it->find("proxy-connection:") == 0) {
+                   || it->find("single_thread_proxy-connection:") == 0) {
             *it = "Connection: close\r\n";
         }
     }

@@ -1,5 +1,5 @@
-#ifndef PROXY_DEFERRED_SOCKET_FACTORY_H
-#define PROXY_DEFERRED_SOCKET_FACTORY_H
+#ifndef PROXY_ACCEPT_SOCKET_FACTORY_H
+#define PROXY_ACCEPT_SOCKET_FACTORY_H
 
 #include <map>
 #include <list>
@@ -74,4 +74,4 @@ namespace net {
 
 }
 
-#endif //PROXY_DEFERRED_SOCKET_FACTORY_H
+#endif //PROXY_ACCEPT_SOCKET_FACTORY_H

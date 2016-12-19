@@ -1,12 +1,12 @@
-#ifndef PROXY_PROXY_H
-#define PROXY_PROXY_H
+#ifndef PROXY_SINGLE_THREAD_PROXY_H
+#define PROXY_SINGLE_THREAD_PROXY_H
 
 #include <set>
-#include "poll/poller.h"
-#include "session/session.h"
-#include "cache/cache.h"
+#include "../poll/poller.h"
+#include "../session/session.h"
+#include "../cache/cache.h"
 
-class proxy : public single_instance {
+class single_thread_proxy : public single_instance {
 
     static const int MAX_WAIT_TIME = 3000;  //  in millis
 
@@ -17,7 +17,7 @@ class proxy : public single_instance {
     std::set<session *> sessions;
 
 public:
-    proxy(uint16_t port);
+    single_thread_proxy(uint16_t port);
 
     void start();
 
@@ -27,4 +27,4 @@ private:
     void clean_completed_sessions();
 };
 
-#endif //PROXY_PROXY_H
+#endif //PROXY_SINGLE_THREAD_PROXY_H

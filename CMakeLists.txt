@@ -5,8 +5,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 link_libraries(pthread)
 
 set(SOURCE_FILES main.cpp
-                 proxy.cpp
                  logging.h)
+set(PROXY_FILES proxy/single_thread_proxy.cpp)
 set(NET_SOURCE net/server_socket.cpp
                net/net_exception.h
                net/socket.cpp
@@ -33,6 +33,7 @@ set(THREAD_SOURCE thread/thread.h
                   thread/mutex.h
                   thread/rw_lock.h)
 add_executable(Proxy ${SOURCE_FILES}
+                     ${PROXY_FILES}
                      ${NET_SOURCE}
                      ${POLL_SOURCE}
                      ${HTTP_SOURCE}

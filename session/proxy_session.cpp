@@ -126,7 +126,7 @@ void proxy_session::init_server() {
     }
     server->set_owner(this);
     pollables.insert(server);
-    _poller.add_timed(server->set_actions(POLL_CO));
+    _poller.add_timed(server->set_actions(POLL_CO));    //  TODO: timed -> untimed (temporally)
 }
 
 void proxy_session::connect_routine() {
