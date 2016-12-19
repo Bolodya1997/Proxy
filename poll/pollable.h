@@ -38,9 +38,12 @@ protected:
 public:
     pollable();
     virtual ~pollable() {
+        if (filed < 0)
+            return;
+
         ::close(filed);
 
-        if (filed >= 0 && watcher)
+        if (watcher)
             watcher->update();
     }
 
