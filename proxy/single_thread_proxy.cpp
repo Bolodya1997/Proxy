@@ -5,24 +5,36 @@
 using namespace std;
 
 
-single_thread_proxy::single_thread_proxy(cache &proxy_cache)
+single_thread_proxy::single_thread_proxy(cache *proxy_cache)
         : proxy_cache(proxy_cache) { }
-
-single_thread_proxy::single_thread_proxy(cache &proxy_cache, uint16_t port)
-        : single_thread_proxy(proxy_cache) {
-
-    auto proxy_server = new net::server_socket(port);
-    proxy_poller.add_untimed(proxy_server->set_actions(POLL_AC));
-}
 
 void single_thread_proxy::start() {
     while (true) {
+        synchronize();
+
         proxy_poller.poll();
 
         handle_ready();
         clean_out_of_date();
         clean_completed_sessions();
     }
+}
+
+void single_thread_proxy::synchronize() {
+    cond.get_mutex().lock();
+
+    do {
+        for (auto it = added_connections.begin(); it != added_connections.end(); it++)
+            sessions.insert(new proxy_session(proxy_poller, *proxy_cache, *it));
+
+        if (sessions.empty())
+            cond.wait();
+        else
+            break;
+
+    } while (true);
+
+    cond.get_mutex().unlock();
 }
 
 void single_thread_proxy::handle_ready() {
@@ -33,14 +45,6 @@ void single_thread_proxy::handle_ready() {
 
     for (auto it = ready.begin(); it != ready.end(); it++) {
         pollable *cur = *it;
-
-        if (cur->is_acceptable()) {
-            auto as_factory = net::accept_socket_factory::get_instance();
-            net::socket *client = as_factory->get_accept_socket(cur);
-            sessions.insert(new proxy_session(proxy_poller, proxy_cache, client));
-
-            continue;
-        }
 
         if (cur->is_connectable() || cur->is_readable() || cur->is_writable()) {
             auto *cur_session = dynamic_cast<session *>(cur->get_owner());
