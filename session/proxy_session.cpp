@@ -5,6 +5,9 @@
 using namespace std;
 
 void proxy_session::update() {
+    if (complete)
+        return;
+
     switch (stage) {
         case CLIENT_REQUEST:
             client_request_routine();
@@ -36,7 +39,7 @@ void proxy_session::close() {
         case CACHE_CLIENT:
         case RESPONSE_CLIENT:
         case ERROR_CLIENT:
-            logging::silent_end();
+            logging::client_failed();
             set_complete();
             return;
 
@@ -66,17 +69,19 @@ void proxy_session::client_request_routine() {
     if (!request.is_ready())
         return;
 
-    net::accept_socket_factory::get_instance()->free_reserved_fd(client);
-
     if (request.is_get()) {
+        critical_section_open(&_cache);
+
         entry = _cache.get_entry(request.get_absolute_url());
         if (entry) {
             read_from_cache();
             return;
         }
+
+        critical_section_close;
     }
 
-    client->set_actions(0);
+    client->set_actions(POLL_NO);
     stage = CONNECT;
 
     init_server();
@@ -91,7 +96,13 @@ void proxy_session::read_from_cache() {
         server->close();
         pollables.erase(server);
     } else {
-        net::accept_socket_factory::get_instance()->update();
+        auto as_factory = net::accept_socket_factory::get_instance();
+        critical_section_open(as_factory);
+
+        as_factory->free_reserved_fd(client);
+        as_factory->update();
+
+        critical_section_close;
     }
 
     client->set_actions(POLL_WR);
@@ -102,7 +113,13 @@ void proxy_session::init_server() {
     string host = request.get_host().first;
     uint16_t port = request.get_host().second;
     try {
+        auto as_factory = net::accept_socket_factory::get_instance();
+        critical_section_open(as_factory);
+
+        as_factory->free_reserved_fd(client);
         server = new net::socket(host, port);
+
+        critical_section_close;
     } catch (exception) {
         close();
         return;
@@ -125,7 +142,7 @@ void proxy_session::connect_routine() {
         response.add_data(ok.data(), ok.length());
 
         client->set_actions(POLL_WR);
-        server->set_actions(0);
+        server->set_actions(POLL_NO);
         stage = RESPONSE_CLIENT;
         return;
     }
@@ -171,12 +188,16 @@ void proxy_session::server_response_routine() {
 
     if (response.is_workable()) {
         try {
+            critical_section_open(&_cache);
+
             entry = _cache.get_entry(request.get_absolute_url());
             if (entry)
                 read_from_cache();
             else
                 write_to_cache();
             return;
+
+            critical_section_close;
         } catch (no_place_exception) {
             logging::cache_fw(request.get_absolute_url());
         }
@@ -185,7 +206,7 @@ void proxy_session::server_response_routine() {
     }
 
     client->set_actions(POLL_WR);
-    server->set_actions(0);
+    server->set_actions(POLL_NO);
     stage = RESPONSE_CLIENT;
 }
 
@@ -205,24 +226,30 @@ void proxy_session::write_to_cache() {
 }
 
 void proxy_session::cache_client_routine() {
-    if (!client->is_writable() && client->get_actions() != 0)
+    critical_section_open(this);
+
+    if (!client->is_writable() && client->get_actions() != POLL_NO)
         return;
+
+    entry->read_start();
+    ssize_t n;
+    string str;
 
     if (!entry->is_valid()) {
         close();
-        return;
+        goto read_end;
     }
 
-    string str = entry->get_data();
+    str = entry->get_data();
     if (str.length() == entry_pos) {
-        client->set_actions(0);
-        return;
+        client->set_actions(POLL_NO);
+        goto read_end;
     }
 
-    ssize_t n = client->write(str.data() + entry_pos, str.length() - entry_pos);
+    n = client->write(str.data() + entry_pos, str.length() - entry_pos);
     if (n == -1) {
         close();
-        return;
+        goto read_end;
     }
 
     entry_pos += n;
@@ -230,6 +257,11 @@ void proxy_session::cache_client_routine() {
         set_complete();     //  success
 
     client->set_actions(POLL_WR);
+
+read_end:
+    entry->read_end();
+
+    critical_section_close;
 }
 
 void proxy_session::response_client_routine() {

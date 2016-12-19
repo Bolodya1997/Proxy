@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.3)
 project(Proxy)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+link_libraries(pthread)
+
 set(SOURCE_FILES main.cpp
                  proxy.cpp
                  logging.h)
@@ -25,11 +27,16 @@ set(SESSION_SOURCE session/proxy_session.cpp
                    session/session_exception.h)
 set(TEMPLATES_SOURCE templates/single_instance.h
                      templates/observer.h
-                     templates/observable.h)
+                     templates/observable.h templates/synchronisable.h)
+set(THREAD_SOURCE thread/thread.h
+                  thread/thread_exception.h
+                  thread/mutex.h
+                  thread/rw_lock.h)
 add_executable(Proxy ${SOURCE_FILES}
                      ${NET_SOURCE}
                      ${POLL_SOURCE}
                      ${HTTP_SOURCE}
                      ${CACHE_SOURCE}
                      ${SESSION_SOURCE}
-                     ${TEMPLATES_SOURCE})
+                     ${TEMPLATES_SOURCE}
+                     ${THREAD_SOURCE})

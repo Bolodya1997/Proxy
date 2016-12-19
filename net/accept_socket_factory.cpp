@@ -42,6 +42,8 @@ short accept_socket_factory::deferred_socket::get_actions() {
 
 //  accept_socket_factory
 
+accept_socket_factory *accept_socket_factory::instance = new accept_socket_factory();
+
 net::socket *accept_socket_factory::get_accept_socket(pollable *accepter) {
     accept_data ac_data;
     ac_data.accepter = accepter;
@@ -104,7 +106,6 @@ void accept_socket_factory::free_reserved_fd(pollable *socket) {
 
 /*
  *  FIXME: no exception allowed (I hardly believe there wouldn't be any)
- *
  */
 void accept_socket_factory::update() noexcept {
     if (accept_sockets.empty())
@@ -135,5 +136,3 @@ void accept_socket_factory::update() noexcept {
         return;
     }
 }
-
-accept_socket_factory *accept_socket_factory::instance = NULL;

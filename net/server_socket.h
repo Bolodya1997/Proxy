@@ -18,7 +18,7 @@ namespace net {
         pollable *accept() override;
 
     private:
-        void guard() override { };
+        void __abstract_guard() override { };
     };
 
 }

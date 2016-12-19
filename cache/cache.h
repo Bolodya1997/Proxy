@@ -9,8 +9,17 @@
 #include "../poll/pollable.h"
 #include "no_place_exception.h"
 #include "cache_loader.h"
+#include "../thread/mutex.h"
+#include "../templates/synchronisable.h"
 
-class cache : public single_instance {
+/*
+ *      #######################################
+ *      #                                     #
+ *      #         MUST BE THREAD SAFE         #
+ *      #                                     #
+ *      #######################################
+ */
+class cache : public synchronisable {
 
     static const unsigned long CACHE_CAPACITY = 1024 * 1024 * 5;
     static const unsigned long CACHE_PAGE_SIZE = CACHE_CAPACITY / 10 * 9;

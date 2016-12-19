@@ -14,6 +14,7 @@ class cache_loader : public session {
 public:
     cache_loader(pollable *server, cache_entry *entry)
             : server(server), entry(entry) {
+
         pollables.insert(server);
 
         this->server->set_actions(POLL_RE);
@@ -21,8 +22,12 @@ public:
     }
 
     virtual ~cache_loader() {
+        entry->lock.write_lock();
+
         if (!entry->is_complete() && entry->is_valid())
             entry->valid = false;
+
+        entry->lock.unlock();
     }
 
     void update() override {
@@ -36,7 +41,6 @@ public:
     bool is_complete() override {
         return server_closed || entry->is_complete();
     };
-
 
     void close() override {
         server_closed = true;

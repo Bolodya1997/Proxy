@@ -6,13 +6,23 @@
 #include <cstring>
 #include "../templates/single_instance.h"
 #include "../templates/observable.h"
+#include "../thread/rw_lock.h"
+#include "../templates/synchronisable.h"
 
 typedef std::chrono::milliseconds millis;
 
-class cache_entry : public single_instance,
-                    public observable {
+/*
+ *      #######################################
+ *      #                                     #
+ *      #         MUST BE THREAD SAFE         #
+ *      #                                     #
+ *      #######################################
+ */
+class cache_entry : public observable {
 
     millis last_access_time;
+
+    rw_lock lock;
 
     unsigned long size;
     std::string data;
@@ -27,6 +37,8 @@ public:
     };
 
     void add_data(const void *buff, size_t n) {
+        lock.write_lock();
+
         if (n < 1) {
             valid = false;
         } else {
@@ -34,38 +46,60 @@ public:
             if (data.length() == size)
                 complete = true;
         }
+
+        lock.unlock();
         update_all();
     }
 
+    void read_start() {
+        lock.read_lock();
+    }
+
+    void read_end() {
+        lock.unlock();
+    }
+
+    //  read lock
     const std::string &get_data() {
-        auto now = std::chrono::system_clock::now().time_since_epoch();
-        last_access_time = std::chrono::duration_cast<millis>(now);
+        if (guard.try_lock()) {
+            auto now = std::chrono::system_clock::now().time_since_epoch();
+            last_access_time = std::chrono::duration_cast<millis>(now);
+
+            guard.unlock();
+        }
 
         return data;
     }
 
     millis get_last_access_time() {
+        critical_section_open(this);
+
         return last_access_time;
+
+        critical_section_close;
     }
 
+    //  read lock
     unsigned long get_size() {
         return size;
     }
 
+    //  read lock
     bool is_complete() {
         return complete;
     }
 
     bool is_in_use() {
-        return !observers.empty();
+        return !is_empty();
     }
 
+    //  read lock
     bool is_valid() {
         return valid;
     }
 
 private:
-    void guard() override { };
+    void __abstract_guard() override { };
 
     friend class cache_loader;
 };

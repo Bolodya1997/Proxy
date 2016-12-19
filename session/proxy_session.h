@@ -8,11 +8,18 @@
 #include "../cache/cache.h"
 #include "../net/accept_socket_factory.h"
 
-class proxy_session : public session {
+/*
+ *      #######################################
+ *      #                                     #
+ *      #         MUST BE THREAD SAFE         #
+ *      #                                     #
+ *      #######################################
+ */
+class proxy_session : public session,
+                      public synchronisable {
 
     enum {
         CLIENT_REQUEST,
-        DNS_QUERY,
         CONNECT,
         REQUEST_SERVER,
 
@@ -26,8 +33,6 @@ class proxy_session : public session {
 
     poller &_poller;
     cache &_cache;
-
-    pollable *dns_query;
 
     pollable *client;
     pollable *server = NULL;
@@ -71,15 +76,18 @@ private:
         complete = true;
 
         auto as_factory = net::accept_socket_factory::get_instance();
+        critical_section_open(as_factory);
+
         as_factory->free_reserved_fd(client);
         as_factory->update();
+
+        critical_section_close;
 
         if (entry)
             entry->remove_observer(this);
     }
 
     void client_request_routine();
-    void dns_query_routine();
     void connect_routine();
     void request_server_routine();
 

@@ -31,7 +31,7 @@ namespace net {
         friend pollable *server_socket::accept();
 
     private:
-        void guard() override { };
+        void __abstract_guard() override { };
     };
 }
 

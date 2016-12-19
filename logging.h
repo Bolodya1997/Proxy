@@ -27,8 +27,8 @@ namespace logging {
 //        std::cerr << "request_fw: " + url << std::endl;
     }
 
-    static void silent_end(){
-        std::cerr << "client failed" << std::endl;
+    static void client_failed(){
+//        std::cerr << "client failed" << std::endl;
     }
 
     static void empty() {

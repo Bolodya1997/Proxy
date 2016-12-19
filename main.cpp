@@ -14,11 +14,36 @@ uint16_t get_port(int argc, char **argv) {
     return (uint16_t) stoi(argv[1]);
 }
 
+struct A {
+    ~A() {
+        cout << "A destroyed" << endl;
+    }
+};
+
+struct B {
+    ~B() {
+        cout << "B destroyed" << endl;
+    }
+
+    A foo1() {
+        cout << "foo1" << endl;
+        return A();
+    }
+
+    void foo2() {
+        foo1();
+        cout << "foo2" << endl;
+    }
+};
+
 /*
  * ./Proxy port
  */
 int main(int argc, char **argv) {
     uint16_t port = get_port(argc, argv);
+
+//    B b;
+//    b.foo2();
 
     rlimit limit;
     getrlimit(RLIMIT_NOFILE, &limit);

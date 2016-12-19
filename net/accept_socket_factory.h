@@ -7,10 +7,19 @@
 #include "../logging.h"
 #include "socket.h"
 #include "../poll/fd_watcher.h"
+#include "../templates/synchronisable.h"
 
-namespace net {
-
-    class accept_socket_factory : public fd_watcher {
+namespace net { 
+    
+    /*
+     *      #######################################
+     *      #                                     #
+     *      #         MUST BE THREAD SAFE         #
+     *      #                                     #
+     *      #######################################
+     */
+    class accept_socket_factory : public fd_watcher, 
+                                  public synchronisable {
 
         class deferred_socket : public net::socket {
             short saved_actions = 0;
@@ -50,9 +59,6 @@ namespace net {
 
     public:
         static accept_socket_factory *get_instance() {
-            if (!instance)
-                instance = new accept_socket_factory();
-
             return instance;
         }
 

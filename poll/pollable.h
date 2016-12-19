@@ -83,7 +83,7 @@ private:
         _pollfd.revents = revents;
     }
 
-    virtual void guard() = 0;
+    virtual void __abstract_guard() = 0;
 
     friend class poller;
 };
