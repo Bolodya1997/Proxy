@@ -12,8 +12,6 @@ protected:
     mutex guard;
 
 public:
-    virtual ~synchronisable() { }
-
     class critical_section {
 
         mutex *lock;
@@ -27,6 +25,8 @@ public:
         ~critical_section() {
             lock->unlock();
         }
+
+        friend class synchronisable;
     };
 };
 

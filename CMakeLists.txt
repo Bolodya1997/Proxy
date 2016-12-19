@@ -6,7 +6,8 @@ link_libraries(pthread)
 
 set(SOURCE_FILES main.cpp
                  logging.h)
-set(PROXY_FILES proxy/single_thread_proxy.cpp proxy/proxy.cpp proxy/proxy.h)
+set(PROXY_FILES proxy/single_thread_proxy.cpp
+                proxy/proxy.cpp)
 set(NET_SOURCE net/server_socket.cpp
                net/net_exception.h
                net/socket.cpp
@@ -27,11 +28,13 @@ set(SESSION_SOURCE session/proxy_session.cpp
                    session/session_exception.h)
 set(TEMPLATES_SOURCE templates/single_instance.h
                      templates/observer.h
-                     templates/observable.h templates/synchronisable.h)
+                     templates/observable.h
+                     templates/synchronisable.h)
 set(THREAD_SOURCE thread/thread.h
                   thread/thread_exception.h
                   thread/mutex.h
-                  thread/rw_lock.h)
+                  thread/rw_lock.h
+                  thread/conditional.h)
 add_executable(Proxy ${SOURCE_FILES}
                      ${PROXY_FILES}
                      ${NET_SOURCE}

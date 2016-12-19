@@ -8,9 +8,10 @@
 class mutex : public single_instance {
 
     pthread_mutex_t _mutex;
+    int depth = 0;
 
 public:
-    mutex() {
+    mutex() {   //  TODO: (*)
         _mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
     }
 
@@ -21,16 +22,23 @@ public:
     void lock() {
         if (pthread_mutex_lock(&_mutex) < 0)
             throw (thread_exception());
+        ++depth;
     }
 
     bool try_lock() {
-        return pthread_mutex_trylock(&_mutex) == 0;
+        if (pthread_mutex_trylock(&_mutex) != 0)
+            return false;
+        ++depth;
+        return true;
     }
 
     void unlock() {
         if (pthread_mutex_unlock(&_mutex) < 0)
             throw (thread_exception());
+        --depth;
     }
+
+    friend class conditional;
 };
 
 #endif //PROXY_MUTEX_H
