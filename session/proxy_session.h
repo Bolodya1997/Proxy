@@ -8,15 +8,8 @@
 #include "../cache/cache.h"
 #include "../net/accept_socket_factory.h"
 
-/*
- *      #######################################
- *      #                                     #
- *      #         MUST BE THREAD SAFE         #
- *      #                                     #
- *      #######################################
- */
 class proxy_session : public session,
-                      public synchronisable {
+                      public single_instance {
 
     enum {
         CLIENT_REQUEST,
@@ -63,6 +56,8 @@ public:
     }
 
     void update() override;
+    void update(void *arg) override;
+
     bool is_complete() override {
         return complete;
     }

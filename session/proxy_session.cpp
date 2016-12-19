@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void proxy_session::update() {
+void proxy_session::update(void *) {
     if (complete)
         return;
 
@@ -225,9 +225,12 @@ void proxy_session::write_to_cache() {
     stage = CACHE_CLIENT;
 }
 
-void proxy_session::cache_client_routine() {
-    critical_section_open(this);
 
+void proxy_session::update() {
+    client->set_actions(POLL_WR);
+}
+
+void proxy_session::cache_client_routine() {
     if (!client->is_writable() && client->get_actions() != POLL_NO)
         return;
 
@@ -260,8 +263,6 @@ void proxy_session::cache_client_routine() {
 
 read_end:
     entry->read_end();
-
-    critical_section_close;
 }
 
 void proxy_session::response_client_routine() {

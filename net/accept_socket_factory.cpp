@@ -112,7 +112,7 @@ void accept_socket_factory::update() noexcept {
         return;
 
     auto it = accept_sockets.begin();
-    while (it->second.ready && it != accept_sockets.end())
+    while (it != accept_sockets.end() && it->second.ready)
         ++it;
     if (it == accept_sockets.end())
         return;

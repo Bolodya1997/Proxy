@@ -4,9 +4,9 @@
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "../templates/single_instance.h"
 #include "../templates/observer.h"
 #include "fd_watcher.h"
+#include "../templates/synchronisable.h"
 
 enum {
     POLL_NO = 0x00,
@@ -16,7 +16,14 @@ enum {
     POLL_WR = 0x08
 };
 
-class pollable : public single_instance {
+/*
+ *      #######################################
+ *      #                                     #
+ *      #         MUST BE THREAD SAFE         #
+ *      #                                     #
+ *      #######################################
+ */
+class pollable : public synchronisable {
 
     static fd_watcher *watcher;
 
