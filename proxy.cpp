@@ -37,6 +37,7 @@ void proxy::handle_ready() {
         if (cur->is_acceptable()) {
             auto as_factory = net::accept_socket_factory::get_instance();
             net::socket *client = as_factory->get_accept_socket(cur);
+//            net::socket *client = dynamic_cast<net::socket *>(cur->accept());
             sessions.insert(new proxy_session(proxy_poller, proxy_cache, client));
 
             continue;

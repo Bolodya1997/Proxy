@@ -14,7 +14,7 @@ socket::socket(string hostname, unsigned short int port) {
     filter.ai_family = AF_INET;
     filter.ai_socktype = SOCK_STREAM;
 
-    int res = getaddrinfo(hostname.data(), to_string(port).data(), &filter, &list); //  TODO: (thread) make async
+    int res = getaddrinfo(hostname.c_str(), to_string(port).data(), &filter, &list); //  TODO: (thread) make async
     if (res != 0 || list == NULL) {
         if (errno == ETIMEDOUT)
             throw (fd_exception());
