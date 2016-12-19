@@ -18,8 +18,9 @@ cache_entry *cache::get_entry(string &absolute_url) {
     return it->second;
 }
 
-cache_entry *cache::add_entry(string &absolute_url, unsigned long size,
-                              pollable *server) {
+std::pair<cache_entry *, cache_loader *> cache::add_entry(std::string &absolute_url,
+                                                        unsigned long size,
+                                                        pollable *server) {
     if (size > CACHE_PAGE_SIZE)
         throw (no_place_exception());
 
@@ -33,8 +34,7 @@ cache_entry *cache::add_entry(string &absolute_url, unsigned long size,
 
     logging::store(absolute_url);
 
-    sessions.insert(new cache_loader(server, entry));
-    return entry;
+    return { entry, new cache_loader(server, entry) };
 }
 
 void cache::remove_last_used_entry(millis min_time) {

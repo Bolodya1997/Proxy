@@ -1,30 +1,41 @@
 #include <iostream>
 #include <memory>
 #include <sys/resource.h>
-#include "proxy/single_thread_proxy.h"
+#include "proxy/proxy.h"
 
 using namespace std;
 
-uint16_t get_port(int argc, char **argv) {
-    if (argc < 2){
-        cerr << "Proxy port" << endl;
-        exit(-1);
-    }
+string error = "Proxy port [thread_count]";
 
-    return (uint16_t) stoi(argv[1]);
+uint16_t port;
+unsigned thread_count = 1;
+
+void parse_arguments(int argc, char **argv) {
+    if (argc < 2)
+        throw (exception());
+
+    port = (uint16_t) stoi(argv[1]);
+
+    if (argc > 2)
+        thread_count = (unsigned int) stoul(argv[2]);
 }
 
 /*
- * ./Proxy port
+ * ./Proxy port [thread count]
  */
 int main(int argc, char **argv) {
-    uint16_t port = get_port(argc, argv);
+    try {
+        parse_arguments(argc, argv);
+    } catch (exception) {
+        cerr << error << endl;
+        return -1;
+    }
 
     rlimit limit;
     getrlimit(RLIMIT_NOFILE, &limit);
     limit.rlim_cur = 600;
     setrlimit(RLIMIT_NOFILE, &limit);
 
-    single_thread_proxy _proxy(port);
+    proxy _proxy(port, thread_count);
     _proxy.start();
 }

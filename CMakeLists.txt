@@ -6,7 +6,7 @@ link_libraries(pthread)
 
 set(SOURCE_FILES main.cpp
                  logging.h)
-set(PROXY_FILES proxy/single_thread_proxy.cpp)
+set(PROXY_FILES proxy/single_thread_proxy.cpp proxy/proxy.cpp proxy/proxy.h)
 set(NET_SOURCE net/server_socket.cpp
                net/net_exception.h
                net/socket.cpp

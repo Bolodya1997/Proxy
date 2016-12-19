@@ -214,7 +214,10 @@ void proxy_session::server_response_routine() {
  * cache takes control on server
  */
 void proxy_session::write_to_cache() {
-    entry = _cache.add_entry(request.get_absolute_url(), response.get_length(), server);
+    auto entry__loader = _cache.add_entry(request.get_absolute_url(),
+                                          response.get_length(),
+                                          server);
+    entry = entry__loader.first;
     string tmp = response.get_data();
     entry->add_data(tmp.data(), tmp.length());
     entry->add_observer(this);
@@ -223,6 +226,8 @@ void proxy_session::write_to_cache() {
 
     client->set_actions(POLL_WR);
     stage = CACHE_CLIENT;
+
+    throw (entry__loader.second);
 }
 
 

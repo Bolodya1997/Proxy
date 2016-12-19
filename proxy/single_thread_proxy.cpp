@@ -4,15 +4,15 @@
 
 using namespace std;
 
-single_thread_proxy::single_thread_proxy(uint16_t port)
-        : proxy_server(new net::server_socket(port)),
-          proxy_poller(MAX_WAIT_TIME),
-          proxy_cache(sessions) {
 
-    pollable::set_watcher(net::accept_socket_factory::get_instance());
+single_thread_proxy::single_thread_proxy(cache &proxy_cache)
+        : proxy_cache(proxy_cache) { }
 
-    proxy_server->set_actions(POLL_AC);
-    proxy_poller.add_untimed(proxy_server);
+single_thread_proxy::single_thread_proxy(cache &proxy_cache, uint16_t port)
+        : single_thread_proxy(proxy_cache) {
+
+    auto proxy_server = new net::server_socket(port);
+    proxy_poller.add_untimed(proxy_server->set_actions(POLL_AC));
 }
 
 void single_thread_proxy::start() {

@@ -27,13 +27,11 @@ class cache : public synchronisable {
     std::map<std::string, cache_entry *> entry_map;
     unsigned long size = 0;
 
-    std::set<session *> &sessions;
-
 public:
-    cache(std::set<session *> &sessions) : sessions(sessions) { }
-
     cache_entry *get_entry(std::string &absolute_url);
-    cache_entry *add_entry(std::string &absolute_url, unsigned long size, pollable *server);
+    std::pair<cache_entry *, cache_loader *> add_entry(std::string &absolute_url,
+                                                     unsigned long size,
+                                                     pollable *server);
 
 private:
     void remove_last_used_entry(millis min_time);

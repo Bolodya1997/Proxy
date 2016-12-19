@@ -10,14 +10,14 @@ class single_thread_proxy : public single_instance {
 
     static const int MAX_WAIT_TIME = 3000;  //  in millis
 
-    pollable *proxy_server;
-    poller proxy_poller;
-    cache proxy_cache;
+    poller proxy_poller = poller(MAX_WAIT_TIME);
+    cache &proxy_cache;
 
     std::set<session *> sessions;
 
 public:
-    single_thread_proxy(uint16_t port);
+    single_thread_proxy(cache &proxy_cache);
+    single_thread_proxy(cache &proxy_cache, uint16_t port);
 
     void start();
 

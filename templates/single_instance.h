@@ -7,6 +7,7 @@ public:
     virtual ~single_instance() { }
 
     single_instance(const single_instance &other) = delete;
+    single_instance(single_instance &&other) = default;
     single_instance &operator=(const single_instance &other) = delete;
 };
 

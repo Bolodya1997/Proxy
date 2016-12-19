@@ -8,8 +8,7 @@
 #include "../cache/cache.h"
 #include "../net/accept_socket_factory.h"
 
-class proxy_session : public session,
-                      public single_instance {
+class proxy_session : public session {
 
     enum {
         CLIENT_REQUEST,
