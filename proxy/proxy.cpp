@@ -58,7 +58,7 @@ void proxy::balance(pollable *connection) {
     } else {
         chosen->cond.get_mutex().lock();
 
-        chosen->added_connections.insert(connection);
+        chosen->accepted.insert(connection);
         chosen->cond.notify();
 
         chosen->cond.get_mutex().unlock();

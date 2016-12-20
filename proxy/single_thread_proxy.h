@@ -17,7 +17,7 @@ class single_thread_proxy : public single_instance {
     std::set<session *> sessions;
 
     conditional cond;
-    std::set<pollable *> added_connections;
+    std::set<pollable *> accepted;
 
 public:
     single_thread_proxy(cache *proxy_cache);

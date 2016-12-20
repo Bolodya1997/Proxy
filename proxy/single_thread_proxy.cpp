@@ -24,7 +24,7 @@ void single_thread_proxy::synchronize() {
     cond.get_mutex().lock();
 
     do {
-        for (auto it = added_connections.begin(); it != added_connections.end(); it++)
+        for (auto it = accepted.begin(); it != accepted.end(); it = accepted.erase(it))
             sessions.insert(new proxy_session(proxy_poller, *proxy_cache, *it));
 
         if (sessions.empty())
