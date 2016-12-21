@@ -70,12 +70,12 @@ private:
         complete = true;
 
         auto as_factory = net::accept_socket_factory::get_instance();
-        critical_section_open(as_factory);
+        synchronised_section_open(as_factory);
 
         as_factory->free_reserved_fd(client);
         as_factory->update();
 
-        critical_section_close;
+        synchronised_section_close;
 
         if (entry)
             entry->remove_observer(this);

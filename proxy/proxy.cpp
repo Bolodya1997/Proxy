@@ -36,11 +36,11 @@ void proxy::handle_ready() {
 
     net::socket *client;
     auto as_factory = net::accept_socket_factory::get_instance();
-    critical_section_open(as_factory);
+    synchronised_section_open(as_factory);
 
     client = as_factory->get_accept_socket(proxy_server);
 
-    critical_section_close;
+    synchronised_section_close;
 
     balance(client);
 }

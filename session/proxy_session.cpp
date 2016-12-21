@@ -70,7 +70,7 @@ void proxy_session::client_request_routine() {
         return;
 
     if (request.is_get()) {
-        critical_section_open(&_cache);
+        synchronised_section_open(&_cache);
 
         entry = _cache.get_entry(request.get_absolute_url());
         if (entry) {
@@ -78,7 +78,7 @@ void proxy_session::client_request_routine() {
             return;
         }
 
-        critical_section_close;
+        synchronised_section_close;
     }
 
     client->set_actions(POLL_NO);
@@ -97,12 +97,12 @@ void proxy_session::read_from_cache() {
         pollables.erase(server);
     } else {
         auto as_factory = net::accept_socket_factory::get_instance();
-        critical_section_open(as_factory);
+        synchronised_section_open(as_factory);
 
         as_factory->free_reserved_fd(client);
         as_factory->update();
 
-        critical_section_close;
+        synchronised_section_close;
     }
 
     client->set_actions(POLL_WR);
@@ -114,12 +114,12 @@ void proxy_session::init_server() {
     uint16_t port = request.get_host().second;
     try {
         auto as_factory = net::accept_socket_factory::get_instance();
-        critical_section_open(as_factory);
+        synchronised_section_open(as_factory);
 
         as_factory->free_reserved_fd(client);
         server = new net::socket(host, port);
 
-        critical_section_close;
+        synchronised_section_close;
     } catch (exception) {
         close();
         return;
@@ -188,7 +188,7 @@ void proxy_session::server_response_routine() {
 
     if (response.is_workable()) {
         try {
-            critical_section_open(&_cache);
+            synchronised_section_open(&_cache);
 
             entry = _cache.get_entry(request.get_absolute_url());
             if (entry)
@@ -197,7 +197,7 @@ void proxy_session::server_response_routine() {
                 write_to_cache();
             return;
 
-            critical_section_close;
+            synchronised_section_close;
         } catch (no_place_exception) {
             logging::cache_fw(request.get_absolute_url());
         }
@@ -236,35 +236,33 @@ void proxy_session::update() {
 }
 
 void proxy_session::cache_client_routine() {
-    if (!client->is_writable() && client->get_actions() != POLL_NO)
+    if (!client->is_writable())
         return;
 
     entry->read_start();
     ssize_t n;
-    string str;
+    const string *str;
 
     if (!entry->is_valid()) {
         close();
         goto read_end;
     }
 
-    str = entry->get_data();
-    if (str.length() == entry_pos) {
+    str = &entry->get_data();
+    if (str->length() == entry_pos) {
         client->set_actions(POLL_NO);
         goto read_end;
     }
 
-    n = client->write(str.data() + entry_pos, str.length() - entry_pos);
+    n = client->write(str->data() + entry_pos, str->length() - entry_pos);
     if (n == -1) {
         close();
         goto read_end;
     }
 
     entry_pos += n;
-    if (entry->is_complete() && entry_pos == str.length())
+    if (entry->is_complete() && entry_pos == str->length())
         set_complete();     //  success
-
-    client->set_actions(POLL_WR);
 
 read_end:
     entry->read_end();

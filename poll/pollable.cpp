@@ -12,7 +12,7 @@ pollable::pollable() : filed(-1) {
 }
 
 pollable *pollable::set_actions(short actions) {
-    critical_section_open(this);
+    synchronised_section_open(this);
 
     acceptable = (bool) (actions & POLL_AC);
     connectable = (bool) (actions & POLL_CO);
@@ -26,11 +26,11 @@ pollable *pollable::set_actions(short actions) {
 
     return this;
 
-    critical_section_close;
+    synchronised_section_close;
 }
 
 short pollable::get_actions() {
-    critical_section_open(this);
+    synchronised_section_open(this);
 
     short res = 0;
 
@@ -48,7 +48,7 @@ short pollable::get_actions() {
 
     return res;
 
-    critical_section_close;
+    synchronised_section_close;
 }
 
 pollfd pollable::get_pollfd() {

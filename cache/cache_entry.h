@@ -72,11 +72,11 @@ public:
     }
 
     millis get_last_access_time() {
-        critical_section_open(this);
+        synchronised_section_open(this);
 
         return last_access_time;
 
-        critical_section_close;
+        synchronised_section_close;
     }
 
     //  read lock

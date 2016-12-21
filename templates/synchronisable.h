@@ -3,30 +3,28 @@
 
 #include "../thread/mutex.h"
 
-#define critical_section_open(synch) \
-    { synchronisable::critical_section __critical_guard(synch)
-#define critical_section_close }
+#define synchronised_section_open(synch) \
+    { synchronisable::synchronised_section __critical_guard(synch)
+#define synchronised_section_close }
 
 class synchronisable : public single_instance {
 protected:
     mutex guard;
 
 public:
-    class critical_section {
+    class synchronised_section {
 
         mutex *lock;
 
     public:
 
-        critical_section(synchronisable *obj) : lock(&obj->guard) {
+        synchronised_section(synchronisable *obj) : lock(&obj->guard) {
             lock->lock();
         }
 
-        ~critical_section() {
+        ~synchronised_section() {
             lock->unlock();
         }
-
-        friend class synchronisable;
     };
 };
 
