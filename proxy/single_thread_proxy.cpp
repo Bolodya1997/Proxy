@@ -4,9 +4,15 @@
 
 using namespace std;
 
-
 single_thread_proxy::single_thread_proxy(cache *proxy_cache)
         : proxy_cache(proxy_cache) { }
+
+single_thread_proxy::single_thread_proxy(cache *proxy_cache, pollable *notifier)
+        : single_thread_proxy(proxy_cache) {
+
+    notifier->set_owner(this);
+    proxy_poller.add_untimed(notifier->set_actions(POLL_RE));
+}
 
 void single_thread_proxy::start() {
     while (true) {
@@ -47,12 +53,12 @@ void single_thread_proxy::handle_ready() {
         pollable *cur = *it;
 
         if (cur->is_connectable() || cur->is_readable() || cur->is_writable()) {
-            auto *cur_session = dynamic_cast<session *>(cur->get_owner());
             try {
-                cur_session->update(cur);
+                cur->get_owner()->update(cur);
             } catch (session *_session) {
                 sessions.insert(_session);
             } catch (...) {
+                auto *cur_session = dynamic_cast<session *>(cur->get_owner());
                 cur_session->close();
             }
         }

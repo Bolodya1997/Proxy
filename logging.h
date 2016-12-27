@@ -28,7 +28,7 @@ namespace logging {
     }
 
     static void client_failed(){
-//        std::cerr << "client failed" << std::endl;
+        std::cerr << "client failed" << std::endl;
     }
 
     static void empty() {
@@ -57,10 +57,10 @@ namespace logging {
     }
 
     static void end(std::chrono::milliseconds &start) {
-//        std::cerr
-//        << (std::chrono::duration_cast<std::chrono::milliseconds>
-//                            (std::chrono::system_clock::now().time_since_epoch()) - start).count()
-//        << std::endl;
+        std::cerr
+        << (std::chrono::duration_cast<std::chrono::milliseconds>
+                            (std::chrono::system_clock::now().time_since_epoch()) - start).count()
+        << std::endl;
     }
 }
 

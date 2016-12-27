@@ -7,9 +7,10 @@
 #include "../cache/cache.h"
 #include "../thread/conditional.h"
 
-class single_thread_proxy : public single_instance {
+class single_thread_proxy : public single_instance,
+                            public observer {
 
-    static const int MAX_WAIT_TIME = 3000;  //  in millis
+    static const int MAX_WAIT_TIME = 500;  //  in millis
 
     poller proxy_poller = poller(MAX_WAIT_TIME);
     cache * const proxy_cache;
@@ -21,9 +22,17 @@ class single_thread_proxy : public single_instance {
 
 public:
     single_thread_proxy(cache *proxy_cache);
+    single_thread_proxy(cache *proxy_cache, pollable *notifier);
     virtual ~single_thread_proxy() { }
 
     virtual void start();
+
+    void update() override { }
+
+    void update(void *arg) override {
+        auto notifier = (pollable *) arg;
+        notifier->read(NULL, 0);
+    }
 
 private:
     virtual void synchronize();

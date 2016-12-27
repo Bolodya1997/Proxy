@@ -14,7 +14,15 @@ socket::socket(string hostname, unsigned short int port) {
     filter.ai_family = AF_INET;
     filter.ai_socktype = SOCK_STREAM;
 
-    int res = getaddrinfo(hostname.c_str(), to_string(port).data(), &filter, &list); //  TODO: (thread) make async
+    /*
+     *  class resolver {    TODO
+     *      std::map<std::string, in_addr> resolved;
+     *  public:
+     *      sockadr_in resolve(std::string hostname, uint16_t port);
+     *      pollable *aresolve(std::string hostname, uint16_t port);
+     *  }
+     */
+    int res = getaddrinfo(hostname.c_str(), to_string(port).data(), &filter, &list);
     if (res != 0 || list == NULL) {
         if (errno == ETIMEDOUT)
             throw (fd_exception());

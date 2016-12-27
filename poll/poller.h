@@ -34,6 +34,8 @@ public:
     void add_timed(pollable *_pollable);
     void add_untimed(pollable *_pollable);
 
+    void make_timed(pollable *_pollable);
+
     void poll();
 
     std::vector<pollable *> &get_ready() {
@@ -48,6 +50,6 @@ private:
     void fill_pollfds(std::vector<pollfd> &pollfds);
     void fill_ready(std::vector<pollfd> &pollfds);
     void fill_out_of_date();
-;};
+};
 
 #endif //PROXY_POLLER_H

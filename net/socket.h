@@ -23,6 +23,11 @@ namespace net {
         socket(std::string hostname, unsigned short int port);
         socket(sockaddr_in sock_addr);
 
+        void close() override {
+            pollable::close();
+            shutdown(filed, SHUT_RDWR);
+        }
+
         void connect() override;
 
         ssize_t write(const void *buff, size_t n) override;

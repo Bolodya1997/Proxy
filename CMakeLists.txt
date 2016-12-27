@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.3)
 project(Proxy)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 link_libraries(pthread)
 
 set(SOURCE_FILES main.cpp
                  logging.h)
 set(PROXY_FILES proxy/single_thread_proxy.cpp
-                proxy/proxy.cpp)
+                proxy/proxy.cpp
+                proxy/signal_wrap.h)
 set(NET_SOURCE net/server_socket.cpp
                net/net_exception.h
                net/socket.cpp

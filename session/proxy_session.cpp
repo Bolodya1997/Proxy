@@ -126,12 +126,13 @@ void proxy_session::init_server() {
     }
     server->set_owner(this);
     pollables.insert(server);
-    _poller.add_timed(server->set_actions(POLL_CO));    //  TODO: timed -> untimed (temporally)
+    _poller.add_untimed(server->set_actions(POLL_CO));
 }
 
 void proxy_session::connect_routine() {
     try {
         server->connect();
+        _poller.make_timed(server);
     } catch (net_exception) {
         close();
         return;
@@ -163,7 +164,7 @@ void proxy_session::request_server_routine() {
     if (request_pos < str.length())
         return;
 
-    if (!request.is_get()) {
+    if (!request.is_get()) {          //  FIXME: debug
         auto *fwd = new forward_session(client, server);
         pollables.clear();
         set_complete();

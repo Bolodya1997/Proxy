@@ -1,9 +1,12 @@
 #ifndef PROXY_PROXY_H
 #define PROXY_PROXY_H
 
+#include <csignal>
 #include "single_thread_proxy.h"
 
 class proxy : public single_thread_proxy {
+
+    static const int SIG_MIN = __SIGRTMIN;
 
     std::vector<single_thread_proxy *> proxies;
 

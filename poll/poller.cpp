@@ -18,6 +18,11 @@ void poller::add_untimed(pollable *_pollable) {
     untimed_pollables.push_back(_pollable);
 }
 
+void poller::make_timed(pollable *_pollable) {
+    untimed_pollables.remove(_pollable);
+    add_timed(_pollable);
+}
+
 void poller::poll() {
     vector<pollfd> pollfds;
     fill_pollfds(pollfds);
