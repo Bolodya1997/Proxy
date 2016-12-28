@@ -47,10 +47,13 @@ void proxy_session::close() {
             error += "408 Request Time-out";
             break;
 
+        case LOOKUP:
         case CONNECT:
         case REQUEST_SERVER:
-        case SERVER_RESPONSE:
             error += "504 Gateway Time-out";
+
+        case SERVER_RESPONSE:
+            error += "502 Bad Gateway";
     }
     error += "\r\n\r\n";
 
@@ -82,9 +85,9 @@ void proxy_session::client_request_routine() {
     }
 
     client->set_actions(POLL_NO);
-    stage = CONNECT;
+    stage = LOOKUP;
 
-    init_server();
+    dns_lookup();
 }
 
 void proxy_session::read_from_cache() {
@@ -109,15 +112,27 @@ void proxy_session::read_from_cache() {
     stage = CACHE_CLIENT;
 }
 
-void proxy_session::init_server() {
-    string host = request.get_host().first;
-    uint16_t port = request.get_host().second;
+void proxy_session::dns_lookup() {
+    _dns->lookup(this, request.get_host().first, [this](dns_cb_data * res) -> void {
+        if (res->error != DNS_OK) {
+            close();
+            return;
+        }
+
+        init_server(*(in_addr *) res->addr);
+
+        stage = CONNECT;
+    });
+}
+
+void proxy_session::init_server(in_addr addr) {
     try {
         auto as_factory = net::accept_socket_factory::get_instance();
         synchronised_section_open(as_factory);
 
         as_factory->free_reserved_fd(client);
-        server = new net::socket(host, port);
+        server = new net::socket(addr, request.get_host().second);
+//        server = new net::socket(request.get_host().first, request.get_host().second);
 
         synchronised_section_close;
     } catch (exception) {

@@ -13,7 +13,8 @@ set(NET_SOURCE net/server_socket.cpp
                net/net_exception.h
                net/socket.cpp
                net/accept_socket_factory.cpp
-               net/fd_exception.h)
+               net/fd_exception.h
+               net/dns_wrap.h)
 set(POLL_SOURCE poll/poller.cpp
                 poll/pollable.cpp
                 poll/fd_watcher.h)
@@ -36,6 +37,8 @@ set(THREAD_SOURCE thread/thread.h
                   thread/mutex.h
                   thread/rw_lock.h
                   thread/conditional.h)
+set(TADNS_SOURCE tadns/llist.h
+                 tadns/tadns.cpp)
 add_executable(Proxy ${SOURCE_FILES}
                      ${PROXY_FILES}
                      ${NET_SOURCE}
@@ -44,4 +47,5 @@ add_executable(Proxy ${SOURCE_FILES}
                      ${CACHE_SOURCE}
                      ${SESSION_SOURCE}
                      ${TEMPLATES_SOURCE}
-                     ${THREAD_SOURCE})
+                     ${THREAD_SOURCE}
+                     ${TADNS_SOURCE})

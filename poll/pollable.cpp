@@ -7,7 +7,7 @@ using namespace std;
 
 fd_watcher *pollable::watcher = NULL;
 
-pollable::pollable() : filed(-1) {
+pollable::pollable() {
     _pollfd.events = 0;
     _pollfd.revents = 0;
 }

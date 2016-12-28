@@ -12,16 +12,14 @@ namespace net {
 
     class socket : public pollable {
 
-        sockaddr_in sock_addr;
-
     protected:
         socket(int filed) {
             this->filed = filed;
         }
 
     public:
-        socket(std::string hostname, unsigned short int port);
-        socket(sockaddr_in sock_addr);
+        socket(std::string hostname, uint16_t port);
+        socket(in_addr addr, uint16_t port);
 
         void close() override {
             pollable::close();

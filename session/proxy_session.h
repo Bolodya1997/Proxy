@@ -7,11 +7,13 @@
 #include "session.h"
 #include "../cache/cache.h"
 #include "../net/accept_socket_factory.h"
+#include "../net/dns_wrap.h"
 
 class proxy_session : public session {
 
     enum {
         CLIENT_REQUEST,
+        LOOKUP,
         CONNECT,
         REQUEST_SERVER,
 
@@ -25,6 +27,7 @@ class proxy_session : public session {
 
     poller &_poller;
     cache &_cache;
+    dns_wrap * const _dns;
 
     pollable *client;
     pollable *server = NULL;
@@ -43,8 +46,8 @@ class proxy_session : public session {
     bool complete = false;
 
 public:
-    proxy_session(poller &_poller, cache &_cache, pollable *client)
-            : _poller(_poller), _cache(_cache), client(client) {
+    proxy_session(poller &_poller, cache &_cache, dns_wrap *_dns, pollable *client)
+            : _poller(_poller), _cache(_cache), _dns(_dns), client(client) {
         pollables.insert(client);
 
         client->set_owner(this);
@@ -91,7 +94,8 @@ private:
     void response_client_routine();
     void error_client_routine();
 
-    void init_server();
+    void dns_lookup();
+    void init_server(in_addr addr);
 
     void read_from_cache();
     void write_to_cache();

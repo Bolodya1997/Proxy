@@ -14,14 +14,6 @@ socket::socket(string hostname, unsigned short int port) {
     filter.ai_family = AF_INET;
     filter.ai_socktype = SOCK_STREAM;
 
-    /*
-     *  class resolver {    TODO
-     *      std::map<std::string, in_addr> resolved;
-     *  public:
-     *      sockadr_in resolve(std::string hostname, uint16_t port);
-     *      pollable *aresolve(std::string hostname, uint16_t port);
-     *  }
-     */
     int res = getaddrinfo(hostname.c_str(), to_string(port).data(), &filter, &list);
     if (res != 0 || list == NULL) {
         if (errno == ETIMEDOUT)
@@ -34,10 +26,10 @@ socket::socket(string hostname, unsigned short int port) {
     freeaddrinfo(list);
 
     this->~socket();
-    new(this) socket(sock_addr);
+    new(this) socket(sock_addr.sin_addr, port);
 }
 
-socket::socket(sockaddr_in sock_addr) {
+socket::socket(in_addr addr, uint16_t port) {
     filed = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (filed < 0) {
         if (errno == EMFILE)
@@ -45,6 +37,11 @@ socket::socket(sockaddr_in sock_addr) {
         throw (net_exception("socket"));
     }
 
+    sockaddr_in sock_addr = {
+            .sin_family = AF_INET,
+            .sin_port = htons(port),
+            .sin_addr = addr
+    };
     if (::connect(filed, (sockaddr *) &sock_addr, sizeof(sockaddr_in)) < 0
         && errno != EINPROGRESS) {
         throw (net_exception("connect"));

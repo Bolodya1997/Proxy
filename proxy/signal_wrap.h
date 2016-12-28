@@ -27,7 +27,7 @@ public:
         sigprocmask(SIG_UNBLOCK, &mask, NULL);
     }
 
-    virtual ssize_t read(void *buff, size_t n) override {
+    virtual ssize_t read(void *buff, size_t) override {
         signalfd_siginfo tmp;
         if (buff == NULL)
             buff = &tmp;

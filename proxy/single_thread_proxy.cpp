@@ -5,7 +5,9 @@
 using namespace std;
 
 single_thread_proxy::single_thread_proxy(cache *proxy_cache)
-        : proxy_cache(proxy_cache) { }
+        : proxy_cache(proxy_cache) {
+    proxy_poller.add_untimed(proxy_dns->set_actions(POLL_RE));
+}
 
 single_thread_proxy::single_thread_proxy(cache *proxy_cache, pollable *notifier)
         : single_thread_proxy(proxy_cache) {
@@ -31,7 +33,7 @@ void single_thread_proxy::synchronize() {
 
     do {
         for (auto it = accepted.begin(); it != accepted.end(); it = accepted.erase(it))
-            sessions.insert(new proxy_session(proxy_poller, *proxy_cache, *it));
+            sessions.insert(new proxy_session(proxy_poller, *proxy_cache, proxy_dns, *it));
 
         if (sessions.empty())
             cond.wait();

@@ -6,6 +6,7 @@
 #include "../session/session.h"
 #include "../cache/cache.h"
 #include "../thread/conditional.h"
+#include "../net/dns_wrap.h"
 
 class single_thread_proxy : public single_instance,
                             public observer {
@@ -14,6 +15,8 @@ class single_thread_proxy : public single_instance,
 
     poller proxy_poller = poller(MAX_WAIT_TIME);
     cache * const proxy_cache;
+
+    dns_wrap * const proxy_dns = new dns_wrap();
 
     std::set<session *> sessions;
 

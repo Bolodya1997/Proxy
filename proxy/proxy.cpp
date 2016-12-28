@@ -63,7 +63,7 @@ void proxy::balance(pollable *connection) {
     }
 
     if (chosen == this) {
-        sessions.insert(new proxy_session(proxy_poller, *proxy_cache, connection));
+        sessions.insert(new proxy_session(proxy_poller, *proxy_cache, proxy_dns, connection));
     } else {
         chosen->cond.get_mutex().lock();
 

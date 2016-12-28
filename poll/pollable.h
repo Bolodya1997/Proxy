@@ -27,7 +27,7 @@ class pollable : public synchronisable {
 
     static fd_watcher *watcher;
 
-    observer *owner;
+    observer *owner = NULL;
 
     pollfd _pollfd;
     bool acceptable;
