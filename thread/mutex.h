@@ -33,9 +33,9 @@ public:
     }
 
     void unlock() {
+        --depth;
         if (pthread_mutex_unlock(&_mutex) < 0)
             throw (thread_exception());
-        --depth;
     }
 
     friend class conditional;
